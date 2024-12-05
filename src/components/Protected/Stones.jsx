@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import Sidebar from "./Sidebar";
 import stoneData from "../Data/diamond.json";
@@ -8,9 +8,19 @@ import cart from "../../assets/Sidebar icons/Cart.svg";
 import favselected from "../../assets/Sidebar icons/fav-selected.svg";
 import cartselected from "../../assets/Sidebar icons/cart-selected.svg";
 import diamond from "../../assets/round.png";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Phone,
+  Sheet,
+  ShoppingCart,
+  Star,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Stones() {
+  const navigate = useNavigate();
   const { stones } = stoneData; // Destructure stones array from JSON
   const [selected, setSelected] = useState([]);
   const [favToggled, setFavToggled] = useState({});
@@ -50,7 +60,7 @@ export default function Stones() {
     "Z",
   ];
   const cutOrder = ["EX", "VG", "GD", "FR", "PR"];
-  const fluorescenceOrder = ["None", "FNT", "MED", "STG", "VST"];
+  const fluorescenceOrder = ["None", "VSL", "SLT", "FNT", "MED", "STG", "VST"];
   const gurdleOrder = ["Thin", "Medium", "Slightly Thick", "Thick"];
   const culetOrder = ["None", "Very Small", "Small"];
   const eyeCleanOrder = ["Yes", "No"];
@@ -73,18 +83,6 @@ export default function Stones() {
   // Format number with commas
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
-
-  //Add to cart
-  const addtocart = () => {
-    // call api to add selected stones list to cart
-    console.log(selected, "added to cart");
-  };
-
-  //Add to wishlist
-  const addtowishlist = () => {
-    // call api to add selected stones list to wishlist
-    console.log(selected, "added to wislist");
   };
 
   // Export selected stones to Excel
@@ -332,23 +330,92 @@ export default function Stones() {
     }
   };
 
+  // Toast configuration
+  const toastConfig = {
+    position: "bottom-right",
+    autoClose: 1000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  };
+
+  const addtowishlist = () => {
+    if (selected.length === 0) {
+      toast.error("Please select stones to add to wishlist", toastConfig);
+      return;
+    }
+
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+      pending: "Adding to wishlist...",
+      success: `Added ${selected.length} stone${
+        selected.length > 1 ? "s" : ""
+      } to wishlist`,
+      error: "Failed to add to wishlist",
+      ...toastConfig,
+    });
+
+    console.log(selected, "added to wishlist");
+  };
+
+  const addtocart = () => {
+    if (selected.length === 0) {
+      toast.error("Please select stones to add to cart", toastConfig);
+      return;
+    }
+
+    // Simulate API delay
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+      pending: "Adding to cart...",
+      success: `Added ${selected.length} stone${
+        selected.length > 1 ? "s" : ""
+      } to cart`,
+      error: "Failed to add to cart",
+      ...toastConfig,
+    });
+
+    console.log(selected, "added to cart");
+  };
+
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full h-svh">
       <div className="flex-none md:w-20 w-14">
         <Sidebar />
       </div>
 
-      <div className="flex-auto mt-4 ml-4 space-y-3 w-[85%] h-full">
-        <div className="sticky top-0 bg-main-bg z-[5]">
-          <h2 className="text-4xl font-semibold pb-2 mt-4 text-theme-600">
-            Stones
-          </h2>
-          <Link
-            to={"/search"}
-            className="text-md font-semibold pb-4 text-theme-600 underline "
+      <div className="flex-auto m-4 space-y-3 w-[85%] h-full">
+        <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
+          <div>
+            <h2 className="text-4xl font-semibold text-theme-600">Stones</h2>
+            <Link
+              to={"/search"}
+              className="text-md font-semibold pb-4 text-theme-600 underline "
+            >
+              modify search
+            </Link>
+          </div>
+
+          <button
+            onClick={() => navigate("/contact")}
+            className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
           >
-            modify search
-          </Link>
+            <Phone className="h-5 w-5 mr-2" />
+            <span>Contact Us</span>
+            <style jsx global>{`
+              @keyframes attention {
+                0% {
+                  color: rgb(75 85 99); /* text-gray-600 */
+                }
+                50% {
+                  color: rgb(79 70 229); /* text-theme-600 */
+                }
+                100% {
+                  color: rgb(75 85 99); /* text-gray-600 */
+                }
+              }
+            `}</style>
+          </button>
         </div>
 
         {/* Table */}
@@ -675,7 +742,7 @@ export default function Stones() {
                         {formatNumber(stone.rap)}
                       </td>
                       <td className="text-sm border border-gray-300 px-2 text-right">
-                        {stone.disc}%
+                        -{stone.disc}%
                       </td>
                       <td className="text-sm border border-gray-300 px-2 text-right">
                         {formatNumber(stone.pricepercarat || 0)}
@@ -898,65 +965,70 @@ export default function Stones() {
             </div>
 
             {/* Totals */}
-            <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 space-y-4">
-              <div className="flex overflow-auto">
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-32">
-                    Total Pieces: {totalPieces}
-                  </p>
+            {selected.length > 0 && (
+              <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 space-y-4">
+                <div className="flex overflow-auto">
+                  <div className="flex items-center justify-center mt-2">
+                    <p className="font-semibold text-theme-600 w-32">
+                      Total Pieces: {totalPieces}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center mt-2">
+                    <p className="font-semibold text-theme-600 w-[175px]">
+                      Total Carat: {totalCarat}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center mt-2">
+                    <p className="font-semibold text-theme-600 w-[175px]">
+                      Total Price: ${formatNumber(totalPrice)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center mt-2">
+                    <p className="font-semibold text-theme-600 w-[175px]">
+                      Total Rap: {formatNumber(totalRap)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center mt-2">
+                    <p className="font-semibold text-theme-600 w-[175px]">
+                      Discount: {totalDiscount}%
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Total Carat: {totalCarat}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Total Price: ${formatNumber(totalPrice)}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Total Rap: {formatNumber(totalRap)}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Discount: {totalDiscount}%
-                  </p>
-                </div>
-              </div>
 
-              <div className="flex gap-2 justify-center">
-                {/* Search Button */}
-                <div className="flex justify-center">
-                  <button
-                    onClick={addtocart}
-                    className="bg-theme-600 md:text-sm text-xs text-white p-1 rounded-md hover:bg-theme-700"
-                  >
-                    Add to cart
-                  </button>
-                </div>
-                {/* Reset Button */}
-                <div className="flex justify-center">
-                  <button
-                    onClick={addtowishlist}
-                    className="bg-theme-600 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-700"
-                  >
-                    Add to wishlist
-                  </button>
-                </div>
-                {/* Reset Button */}
-                <div className="flex justify-center">
-                  <button
-                    onClick={exportToExcel}
-                    className="bg-[#3E8F62] md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
-                  >
-                    Export to Excel
-                  </button>
+                <div className="flex gap-2 justify-center">
+                  {/* Search Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Add to Cart"
+                      onClick={addtocart}
+                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {/* Reset Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Add to Wishlist"
+                      onClick={addtowishlist}
+                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                    >
+                      <Star className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {/* Reset Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Export to Excel"
+                      onClick={exportToExcel}
+                      className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
+                    >
+                      <Sheet className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

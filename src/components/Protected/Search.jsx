@@ -14,6 +14,7 @@ import radiantIcon from "../../assets/Shapes/Radiant.svg";
 import { resetSelection, setSelections } from "../state/searchSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useRef } from "react";
+import { Phone } from "lucide-react";
 
 const shapeData = [
   { label: "Round", icon: roundIcon },
@@ -451,6 +452,10 @@ export default function Search() {
     navigate("/stones");
   };
 
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
   return (
     <div className="flex w-full">
       {/* Sidebar */}
@@ -460,10 +465,30 @@ export default function Search() {
 
       {/* Main Content */}
       <div className="flex-auto m-4 space-y-6 w-full">
-        <div className="sticky top-0 bg-main-bg z-[5]">
-          <h2 className="text-4xl font-semibold pb-4 pt-4 text-theme-600">
+        <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
+          <h2 className="text-4xl font-semibold pb-4 text-theme-600">
             Search Inventory
           </h2>
+          <button
+            onClick={() => handleNavigation("/contact")}
+            className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
+          >
+            <Phone className="h-5 w-5 mr-2" />
+            <span>Contact Us</span>
+            <style jsx global>{`
+              @keyframes attention {
+                0% {
+                  color: rgb(75 85 99); /* text-gray-600 */
+                }
+                50% {
+                  color: rgb(79 70 229); /* text-theme-600 */
+                }
+                100% {
+                  color: rgb(75 85 99); /* text-gray-600 */
+                }
+              }
+            `}</style>
+          </button>
         </div>
 
         {/* Shape Section */}

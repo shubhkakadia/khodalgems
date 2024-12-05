@@ -1,11 +1,11 @@
-import React from 'react'
-import Sidebar from './Sidebar'
+import React from "react";
+import Sidebar from "./Sidebar";
 
 export default function Settings() {
   return (
     <div>
-    <Sidebar />
+      <Sidebar />
       Settings
     </div>
-  )
+  );
 }

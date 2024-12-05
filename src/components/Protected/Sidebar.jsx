@@ -8,7 +8,8 @@ import wishlistIcon from "../../assets/Sidebar icons/Fav.svg";
 import logoutIcon from "../../assets/Sidebar icons/Logout.svg";
 import settingsIcon from "../../assets/Sidebar icons/Settings.svg";
 import logofull from "../../assets/CompanyLogo-transparent.png";
-import KayraLogo from "../../assets/KayraLogo.png"
+import KayraLogo from "../../assets/KayraLogo.png";
+import { Clock } from "lucide-react";
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -59,6 +60,12 @@ export default function Sidebar() {
             label="Wishlist"
             isExpanded={isExpanded}
           />
+          <SidebarItem
+            to="/orderhistory"
+            icon={Clock}
+            label="Order History"
+            isExpanded={isExpanded}
+          />
         </nav>
 
         {/* User Profile and Logout */}
@@ -67,9 +74,7 @@ export default function Sidebar() {
             <img src={KayraLogo} alt="User Icon" className="w-10 h-10" />
             {isExpanded && (
               <div>
-                <p className="mb-0 font-semibold leading-tight">
-                  John Doe
-                </p>
+                <p className="mb-0 font-semibold leading-tight">John Doe</p>
                 <p className="text-sm text-gray-500 leading-tight">
                   Kayra Creation
                 </p>

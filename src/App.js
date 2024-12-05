@@ -12,21 +12,40 @@ import Wishlist from "./components/Protected/Wishlist";
 import Cart from "./components/Protected/Cart";
 import Search from "./components/Protected/Search";
 import Stones from "./components/Protected/Stones";
+import { ToastContainer } from "react-toastify";
+import OrderHistory from "./components/Protected/OrderHistory";
+import DiamondDetails from "./components/Protected/DiamondDetails";
+import ContactUs from "./components/Protected/Contactus";
 
 function App() {
   return (
     <div className="bg-main-bg">
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Routes>
         <Route path="login" element={<Login />} />
-        <Route path="contactus" element={<Contactus />} />
+        {/* <Route path="contactus" element={<Contactus />} /> */}
+        <Route path="contact" element={<ContactUs />} />
         <Route path="aboutus" element={<Aboutus />} />
         <Route path="" element={<Home />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="orderhistory" element={<OrderHistory />} />
         <Route path="search" element={<Search />} />
         <Route path="cart" element={<Cart />} />
         <Route path="stones" element={<Stones />} />
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="stonedetails/:number" element={<DiamondDetails />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </div>

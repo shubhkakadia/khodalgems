@@ -70,32 +70,26 @@ export default function Dashboard() {
   const [stoneCount, setStoneCount] = useState(6452);
   const [activeView, setActiveView] = useState("orders");
 
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
   return (
     <div className="flex w-full">
       <div className="flex-none md:w-20 w-14">
         <Sidebar />
       </div>
 
-      <div className="flex-auto mx-4 space-y-4 w-full">
-        {/* Header with Notifications */}
-        <div className="sticky top-0 bg-main-bg z-[5] py-4 flex md:justify-between md:items-center md:flex-row flex-col gap-2">
+      <div className="flex-auto m-4 space-y-6 w-full">
+        {/* Header*/}
+        <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
-            <h2 className="text-4xl font-semibold pt-4 text-theme-600">
-              Dashboard
-            </h2>
+            <h2 className="text-4xl font-semibold text-theme-600">Dashboard</h2>
             <p className="text-lg text-gray-400">Welcome back, John Doe!</p>
           </div>
           <div>
             <button
-              onClick={() => handleNavigation("/contact")}
+              onClick={() => navigate("/contact")}
               className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />
-              <span>Contact Support</span>
+              <span>Contact Us</span>
               <style jsx global>{`
                 @keyframes attention {
                   0% {
@@ -110,7 +104,7 @@ export default function Dashboard() {
                 }
               `}</style>
             </button>
-            {/* <button className="p-2 hover:bg-gray-100 rounded-full relative" onClick={() => handleNavigation('/notifications')}>
+            {/* <button className="p-2 hover:bg-gray-100 rounded-full relative" onClick={() => navigate('/notifications')}>
           <Bell className="h-6 w-6 text-gray-600" />
           <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
         </button> */}
@@ -136,7 +130,7 @@ export default function Dashboard() {
             </div>
             <div className="flex space-x-3">
               <button
-                onClick={() => handleNavigation("/cart")}
+                onClick={() => navigate("/cart")}
                 className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
               >
                 {/* <ExternalLink className="h-4 w-4 mr-2" /> */}
@@ -161,7 +155,7 @@ export default function Dashboard() {
               </div>
             </div>
             <button
-              onClick={() => handleNavigation("/search")}
+              onClick={() => navigate("/search")}
               className="w-full flex items-center justify-center px-4 py-2 bg-theme-600 text-white rounded-md hover:bg-theme-700 transition-colors text-sm"
             >
               {/* <ExternalLink className="h-4 w-4 mr-2" /> */}
@@ -185,7 +179,7 @@ export default function Dashboard() {
               </div>
             </div>
             <button
-              onClick={() => handleNavigation("/wishlist")}
+              onClick={() => navigate("/wishlist")}
               className="w-full flex items-center justify-center px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors text-sm"
             >
               {/* <ExternalLink className="h-4 w-4 mr-2" /> */}
@@ -208,23 +202,23 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2">
               <button
-                onClick={() => handleNavigation("/contact/phone")}
+                onClick={() => navigate("/contact/phone")}
                 className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
               >
                 <Phone className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
                 +1 234 567 8900
               </button>
               <div className="flex gap-2">
-                <button
-                  onClick={() => handleNavigation("/contact/whatsapp")}
+                <a
+                  href="https://wa.me/919409658456"
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
                   <MessageCircle className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
                   WhatsApp
-                </button>
+                </a>
                 <button
                   onClick={() =>
-                    (window.location.href = "mailto:support@example.com")
+                    (window.location.href = "mailto:sales@khodalgems.com")
                   }
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
@@ -234,20 +228,20 @@ export default function Dashboard() {
               </div>
 
               <div className="flex gap-2">
-                <button
-                  onClick={() => handleNavigation("/contact/skype")}
+                <a
+                  href="skype:live:vadsak_vin?call"
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
                   <Video className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
                   Skype
-                </button>
-                <button
-                  onClick={() => handleNavigation("/contact/wechat")}
+                </a>
+                <a
+                  href="weixin://dl/chat?khodalgems"
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
                   <MessageSquare className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
                   WeChat
-                </button>
+                </a>
               </div>
             </div>
           </div>
