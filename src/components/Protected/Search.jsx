@@ -219,7 +219,7 @@ export const CustomDropdown = ({
         >
           <span
             className={`block truncate ${
-              !value ? "text-gray-500" : "text-gray-700"
+              !value ? "text-gray-500 dark:text-gray-400" : "text-gray-700"
             }`}
           >
             {displayValue ? displayValue : `Search ${label}...`}
@@ -260,7 +260,7 @@ export const CustomDropdown = ({
                 >
                   {showColor && (
                     <span
-                      className="w-4 h-4 rounded-full mr-2 border border-gray-200"
+                      className="w-4 h-4 rounded-full mr-2 border border-gray-200 dark:border-gray-700"
                       style={{
                         backgroundColor: option.split(" ")[0].toLowerCase(),
                       }}
@@ -294,7 +294,7 @@ export const CustomDropdown = ({
                 </li>
               ))
             ) : (
-              <li className="px-4 py-2 text-gray-500">No matches found</li>
+              <li className="px-4 py-2 text-gray-500 dark:text-gray-400">No matches found</li>
             )}
           </ul>
         </div>
@@ -478,13 +478,13 @@ export default function Search() {
             <style jsx global>{`
               @keyframes attention {
                 0% {
-                  color: rgb(75 85 99); /* text-gray-600 */
+                  color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                 }
                 50% {
                   color: rgb(79 70 229); /* text-theme-600 */
                 }
                 100% {
-                  color: rgb(75 85 99); /* text-gray-600 */
+                  color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                 }
               }
             `}</style>

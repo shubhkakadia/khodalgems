@@ -5,7 +5,6 @@ import {
   Search,
   Calendar,
   ChevronDown,
-  ExternalLink,
   Download,
   ChevronRight,
 } from "lucide-react";
@@ -213,7 +212,7 @@ export default function OrderHistory() {
         </div>
 
         {/* Filters Row */}
-        <div className="bg-white p-3 rounded-lg shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="relative">
               <select
@@ -245,43 +244,43 @@ export default function OrderHistory() {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th
                   scope="col"
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
                   Order Details
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
                   Date
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
                   Status
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
                   Amount
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
               {filteredOrders.map((order) => (
                 <React.Fragment key={order.id}>
                   <tr className="hover:bg-gray-50">
@@ -293,7 +292,7 @@ export default function OrderHistory() {
                               expandedOrder === order.id ? null : order.id
                             )
                           }
-                          className="mr-2 text-gray-400 hover:text-gray-600"
+                          className="mr-2 text-gray-400 hover:text-gray-600 dark:text-gray-300"
                         >
                           <ChevronRight
                             className={`h-4 w-4 transform transition-transform ${
@@ -305,7 +304,7 @@ export default function OrderHistory() {
                           <div className="font-medium text-gray-900">
                             {order.id}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {order.stones} stones • {order.totalCarats} cts
                           </div>
                         </div>
@@ -348,7 +347,7 @@ export default function OrderHistory() {
                         <button
                         title="Download Invoice"
                           onClick={() => downloadInvoice(order.id)}
-                          className="text-gray-600 hover:text-gray-700"
+                          className="text-gray-600 dark:text-gray-300 hover:text-gray-700"
                         >
                           <Download className="h-4 w-4" />
                         </button>
@@ -362,12 +361,12 @@ export default function OrderHistory() {
                           {order.details.map((detail, index) => (
                             <div
                               key={index}
-                              className="bg-white p-3 rounded-lg shadow-sm"
+                              className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm"
                             >
                               <div className="font-medium text-gray-900">
                                 Stone {detail.stoneno}
                               </div>
-                              <div className="text-gray-500">
+                              <div className="text-gray-500 dark:text-gray-400">
                                 {detail.carat} cts • $
                                 {formatNumber(detail.price)}
                               </div>
@@ -384,7 +383,7 @@ export default function OrderHistory() {
 
           {filteredOrders.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No orders found</p>
+              <p className="text-gray-500 dark:text-gray-400">No orders found</p>
             </div>
           )}
         </div>

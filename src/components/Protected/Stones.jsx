@@ -405,13 +405,13 @@ export default function Stones() {
             <style jsx global>{`
               @keyframes attention {
                 0% {
-                  color: rgb(75 85 99); /* text-gray-600 */
+                  color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                 }
                 50% {
                   color: rgb(79 70 229); /* text-theme-600 */
                 }
                 100% {
-                  color: rgb(75 85 99); /* text-gray-600 */
+                  color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                 }
               }
             `}</style>
@@ -813,7 +813,7 @@ export default function Stones() {
               <div className="flex gap-4 items-center">
                 <img src={diamond} alt="Diamond" />
                 <div>
-                  <h1 className="font-quicksand text-center text-gray-600 font-semibold">
+                  <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
                     Sorry!
                   </h1>
                   <span className="font-quicksand text-center text-gray-400 font-semibold">
@@ -830,13 +830,13 @@ export default function Stones() {
         {sortedData.length > 0 && (
           <div>
             {/* Pagination */}
-            <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 p-2 space-y-4">
+            <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 {/* Rows per page dropdown - Responsive */}
                 <div className="flex items-center">
                   <label
                     htmlFor="rowsPerPage"
-                    className="text-sm font-medium text-gray-600"
+                    className="text-sm font-medium text-gray-600 dark:text-gray-300"
                   >
                     Show
                   </label>
@@ -847,13 +847,13 @@ export default function Stones() {
                       setRowsPerPage(parseInt(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="mx-2 h-9 w-16 rounded-lg border-gray-200 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
+                    className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <span className="text-sm text-gray-600">entries</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">entries</span>
                 </div>
 
                 {/* Pagination Navigation - Responsive */}
@@ -868,7 +868,7 @@ export default function Stones() {
           ${
             currentPage === 1
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200"
+              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
                   >
                     <ChevronLeft className="h-5 w-5 block sm:hidden" />
@@ -919,7 +919,7 @@ export default function Stones() {
                   ${
                     currentPage === page
                       ? "bg-theme-600 text-white"
-                      : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200"
+                      : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
                   }`}
                           >
                             {page}
@@ -945,7 +945,7 @@ export default function Stones() {
           ${
             currentPage === Math.ceil(stones.length / rowsPerPage)
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200"
+              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
                   >
                     <ChevronRight className="h-5 w-5 block sm:hidden" />
@@ -954,7 +954,7 @@ export default function Stones() {
                 </div>
 
                 {/* Results Counter - Responsive */}
-                <p className="text-sm text-gray-600 order-2 sm:order-3">
+                <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
                   <span className="font-medium">
                     {Math.min(indexOfFirstRow + 1, stones.length)}-
                     {Math.min(indexOfLastRow, stones.length)}

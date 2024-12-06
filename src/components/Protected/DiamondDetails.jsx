@@ -56,7 +56,7 @@ export default function DiamondDetails() {
       case 'F': return 'text-orange-600';
       case 'PR': return 'text-red-600';
       case 'STG': return 'text-blue-600';
-      default: return 'text-gray-600';
+      default: return 'text-gray-600 dark:text-gray-300';
     }
   };
 

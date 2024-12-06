@@ -4,10 +4,7 @@ import {
   ShoppingCart,
   Diamond,
   Star,
-  ExternalLink,
   Phone,
-  Bell,
-  Search,
   Mail,
   MessageCircle,
   Video,
@@ -81,7 +78,7 @@ export default function Dashboard() {
         <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
             <h2 className="text-4xl font-semibold text-theme-600">Dashboard</h2>
-            <p className="text-lg text-gray-400">Welcome back, John Doe!</p>
+            <p className="text-lg text-gray-400">Welcome back, Shubh Kakadia!</p>
           </div>
           <div>
             <button
@@ -93,19 +90,19 @@ export default function Dashboard() {
               <style jsx global>{`
                 @keyframes attention {
                   0% {
-                    color: rgb(75 85 99); /* text-gray-600 */
+                    color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                   }
                   50% {
                     color: rgb(79 70 229); /* text-theme-600 */
                   }
                   100% {
-                    color: rgb(75 85 99); /* text-gray-600 */
+                    color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                   }
                 }
               `}</style>
             </button>
             {/* <button className="p-2 hover:bg-gray-100 rounded-full relative" onClick={() => navigate('/notifications')}>
-          <Bell className="h-6 w-6 text-gray-600" />
+          <Bell className="h-6 w-6 text-gray-600 dark:text-gray-300" />
           <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
         </button> */}
           </div>
@@ -114,14 +111,14 @@ export default function Dashboard() {
         {/* Action Boxes */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Cart Box */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-blue-100 p-3 rounded-lg">
                   <ShoppingCart className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Cart Items</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Cart Items</p>
                   <h3 className="text-2xl font-bold text-gray-900">
                     {cartCount}
                   </h3>
@@ -140,14 +137,14 @@ export default function Dashboard() {
           </div>
 
           {/* Total Stones */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-theme-100 p-3 rounded-lg">
                   <Diamond className="h-6 w-6 text-theme-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total Diamonds</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Total Diamonds</p>
                   <h3 className="text-2xl font-bold text-gray-900">
                     {stoneCount}
                   </h3>
@@ -164,14 +161,14 @@ export default function Dashboard() {
           </div>
 
           {/* Wishlist */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-yellow-100 p-3 rounded-lg">
                   <Star className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Wishlist</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Wishlist</p>
                   <h3 className="text-2xl font-bold text-gray-900">
                     {savedCount}
                   </h3>
@@ -188,13 +185,13 @@ export default function Dashboard() {
           </div>
 
           {/* Contact Options */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <div className="flex items-center mb-4">
               <div className="bg-green-100 p-3 rounded-lg">
                 <Phone className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-3">
-                <p className="text-sm text-gray-600">Contact Us</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Contact Us</p>
                 <h3 className="text-lg font-semibold text-gray-900">
                   24/7 Support
                 </h3>
@@ -205,15 +202,15 @@ export default function Dashboard() {
                 onClick={() => navigate("/contact/phone")}
                 className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
               >
-                <Phone className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
-                +1 234 567 8900
+                <Phone className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
+                +91 94096 58456
               </button>
               <div className="flex gap-2">
                 <a
                   href="https://wa.me/919409658456"
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
-                  <MessageCircle className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
+                  <MessageCircle className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
                   WhatsApp
                 </a>
                 <button
@@ -222,7 +219,7 @@ export default function Dashboard() {
                   }
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
-                  <Mail className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
+                  <Mail className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
                   Email Us
                 </button>
               </div>
@@ -232,14 +229,14 @@ export default function Dashboard() {
                   href="skype:live:vadsak_vin?call"
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
-                  <Video className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
+                  <Video className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
                   Skype
                 </a>
                 <a
                   href="weixin://dl/chat?khodalgems"
                   className="w-full flex items-center px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors text-sm group"
                 >
-                  <MessageSquare className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600" />
+                  <MessageSquare className="h-4 w-4 mr-2 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
                   WeChat
                 </a>
               </div>
@@ -248,8 +245,8 @@ export default function Dashboard() {
         </div>
 
         {/* Toggle View Section */}
-        <div className="bg-white rounded-lg shadow-md md:max-w-full max-w-[300px]">
-          <div className="p-4 border-b border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md md:max-w-full max-w-[300px]">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center md:flex-row flex-col gap-4">
               <div className="flex items-center space-x-4 md:flex-row flex-col gap-4">
                 <h2 className="text-lg font-semibold text-gray-900">
@@ -261,7 +258,7 @@ export default function Dashboard() {
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                       activeView === "orders"
                         ? "bg-white text-theme-600 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900"
                     }`}
                   >
                     Recent Orders
@@ -271,7 +268,7 @@ export default function Dashboard() {
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                       activeView === "history"
                         ? "bg-white text-theme-600 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900"
                     }`}
                   >
                     Purchase History
@@ -279,7 +276,7 @@ export default function Dashboard() {
                 </div>
               </div>
               {activeView === "orders" && (
-                <button className="text-theme-600 hover:text-theme-700 text-sm font-medium">
+                <button onClick={() => navigate('/orderhistory')} className="text-theme-600 hover:text-theme-700 text-sm font-medium">
                   View All Orders
                 </button>
               )}
@@ -318,33 +315,33 @@ export default function Dashboard() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Order ID
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Stones/Carats
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Action
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                     {myOrders.map((order) => (
                       <tr key={order.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-theme-600">
                           {order.id}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {order.date}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {order.stones} stones / {order.totalCarats} cts
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

@@ -17,7 +17,7 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 p-10 rounded-2xl shadow-lg w-full max-w-md">
         <Link to="/" className="flex justify-center mb-8">
           <img
             src={companyLogo}

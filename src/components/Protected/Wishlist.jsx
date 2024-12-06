@@ -8,7 +8,6 @@ import {
   Phone,
   Sheet,
   ShoppingCart,
-  Star,
   Trash2,
 } from "lucide-react";
 import wishlistData from "../Data/wishlist.json";
@@ -17,6 +16,7 @@ import cartselected from "../../assets/Sidebar icons/cart-selected.svg";
 
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx";
 
 export default function Wishlist() {
   const clarityOrder = [
@@ -164,16 +164,6 @@ export default function Wishlist() {
     ? customSort(currentRows, sortConfig.column, sortConfig.direction)
     : currentRows;
 
-  // Export selected stones to Excel
-  const exportToExcel = () => {
-    if (selected.length === 0) {
-      alert("No stones selected to export!");
-      return;
-    }
-
-    // [Same export logic as Stones component]
-  };
-
   const toggleCart = (stoneNo) => {
     // call api to add selected stone to cart
     setCartToggled((prev) => ({
@@ -302,6 +292,99 @@ export default function Wishlist() {
     console.log(selected, "removed from cart");
   };
 
+  const exportToExcel = () => {
+    if (selected.length === 0) {
+      alert("No stones selected to export!");
+      return;
+    }
+
+    // Prepare data for Excel
+    const data = selected.map((stone) => ({
+      "Stone No": stone.stoneno,
+      "Certificate No": stone.certificateno,
+      Shape: stone.shape,
+      Carat: stone.carat,
+      Color: stone.color,
+      Clarity: stone.clarity,
+      Price: stone.price,
+      Rap: stone.rap,
+      Discount: stone.disc,
+      "$/Carat": stone.pricepercarat || 0,
+      Cut: stone.cut,
+      Polish: stone.polish,
+      Symmetry: stone.symmetry,
+      Fluorescence: stone.fluorescence,
+      Lab: stone.lab,
+      Comment: stone.comment,
+      "Eye Clean": stone.eye,
+      "Table%": stone.table,
+      "Depth%": stone.depth,
+      "Crown%": stone.crown,
+      "Pavilion%": stone.pavilion,
+      Length: stone.length,
+      Width: stone.width,
+      Height: stone.height,
+      Gurdle: stone.gurdle,
+      Culet: stone.culet,
+      Ratio: stone.ratio,
+      Location: stone.location,
+    }));
+
+    data.push(
+      {},
+      {
+        "Stone No": "TOTALS",
+        "Certificate No": "",
+        Shape: "",
+        Carat: totalCarat,
+        Color: "",
+        Clarity: "",
+        Price: totalPrice,
+        Rap: totalRap,
+        Discount: `${totalDiscount}%`,
+        "$/Carat": "",
+        Cut: "",
+        Polish: "",
+        Symmetry: "",
+        Fluorescence: "",
+        Lab: "",
+        Comment: "",
+        "Eye Clean": "",
+        "Table%": "",
+        "Depth%": "",
+        "Crown%": "",
+        "Pavilion%": "",
+        Length: "",
+        Width: "",
+        Height: "",
+        Gurdle: "",
+        Culet: "",
+        Ratio: "",
+        Location: "",
+      }
+    );
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    // Append worksheet to workbook
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Selected Stones in Wishlist"
+    );
+
+    // Get current date and time
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // DD-MM-YYYY
+    const formattedTime = now.toLocaleTimeString("en-GB").replace(/:/g, ":"); // HH:MM:SS
+
+    // Generate Excel file with dynamic name
+    const filename = `khodalgems stock - wishlist ${formattedDate} ${formattedTime}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+  };
+
   return (
     <div className="flex w-full h-full">
       <div className="flex-none md:w-20 w-14">
@@ -325,13 +408,13 @@ export default function Wishlist() {
             <style jsx global>{`
               @keyframes attention {
                 0% {
-                  color: rgb(75 85 99); /* text-gray-600 */
+                  color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                 }
                 50% {
                   color: rgb(79 70 229); /* text-theme-600 */
                 }
                 100% {
-                  color: rgb(75 85 99); /* text-gray-600 */
+                  color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
                 }
               }
             `}</style>
@@ -720,7 +803,7 @@ export default function Wishlist() {
               <div className="flex gap-4 items-center">
                 <img src={diamond} alt="Diamond" />
                 <div>
-                  <h1 className="font-quicksand text-center text-gray-600 font-semibold">
+                  <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
                     Your wishlist is empty!
                   </h1>
                   <span className="font-quicksand text-center text-gray-400 font-semibold">
@@ -737,13 +820,13 @@ export default function Wishlist() {
           <div>
             {/* Pagination Section - Same as Stones component */}
             {/* Pagination */}
-            <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 p-2 space-y-4">
+            <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 {/* Rows per page dropdown - Responsive */}
                 <div className="flex items-center">
                   <label
                     htmlFor="rowsPerPage"
-                    className="text-sm font-medium text-gray-600"
+                    className="text-sm font-medium text-gray-600 dark:text-gray-300"
                   >
                     Show
                   </label>
@@ -754,13 +837,13 @@ export default function Wishlist() {
                       setRowsPerPage(parseInt(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="mx-2 h-9 w-16 rounded-lg border-gray-200 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
+                    className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <span className="text-sm text-gray-600">entries</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">entries</span>
                 </div>
 
                 {/* Pagination Navigation - Responsive */}
@@ -775,7 +858,7 @@ export default function Wishlist() {
           ${
             currentPage === 1
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200"
+              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
                   >
                     <ChevronLeft className="h-5 w-5 block sm:hidden" />
@@ -826,7 +909,7 @@ export default function Wishlist() {
                   ${
                     currentPage === page
                       ? "bg-theme-600 text-white"
-                      : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200"
+                      : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
                   }`}
                           >
                             {page}
@@ -852,7 +935,7 @@ export default function Wishlist() {
           ${
             currentPage === Math.ceil(wishlist.length / rowsPerPage)
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200"
+              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
                   >
                     <ChevronRight className="h-5 w-5 block sm:hidden" />
@@ -861,7 +944,7 @@ export default function Wishlist() {
                 </div>
 
                 {/* Results Counter - Responsive */}
-                <p className="text-sm text-gray-600 order-2 sm:order-3">
+                <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
                   <span className="font-medium">
                     {Math.min(indexOfFirstRow + 1, wishlist.length)}-
                     {Math.min(indexOfLastRow, wishlist.length)}

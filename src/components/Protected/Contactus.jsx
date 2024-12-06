@@ -53,7 +53,7 @@ export default function ContactUs() {
         {/* Main Content */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Left Column - Contact Form */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -64,7 +64,7 @@ export default function ContactUs() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
+                  className="w-full rounded-lg border-gray-200 dark:border-gray-700 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
                   required
                 />
               </div>
@@ -77,7 +77,7 @@ export default function ContactUs() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
+                  className="w-full rounded-lg border-gray-200 dark:border-gray-700 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
                   required
                 />
               </div>
@@ -90,7 +90,7 @@ export default function ContactUs() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
+                  className="w-full rounded-lg border-gray-200 dark:border-gray-700 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
                   required
                 />
               </div>
@@ -103,7 +103,7 @@ export default function ContactUs() {
                   value={formData.message}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full rounded-lg border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
+                  className="w-full rounded-lg border-gray-200 dark:border-gray-700 p-2.5 text-sm focus:ring-2 focus:ring-theme-500 border-2"
                   required
                 ></textarea>
               </div>
@@ -118,7 +118,7 @@ export default function ContactUs() {
 
           {/* Right Column - Map */}
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
               <iframe
                 title="map"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3719.516063161418!2d72.84461787471932!3d21.211375081482384!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be04fcef815cfdd%3A0x989b790402acb15a!2sKhodal%20Gems!5e0!3m2!1sen!2sin!4v1733311795998!5m2!1sen!2sin"
@@ -135,44 +135,44 @@ export default function ContactUs() {
         {/* Contact Information and Social Links */}
         <div className="grid md:grid-cols-3 gap-6">
           {/* Contact Methods */}
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">
               Contact Details
             </h3>
             <div className="space-y-3">
               <a
                 href="tel:+919409658456"
-                className="flex items-center text-gray-600 hover:text-theme-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-theme-600"
               >
                 <Phone className="h-5 w-5 mr-2" />
                 +91 94096 58456
               </a>
               <a
                 href="mailto:contact@example.com"
-                className="flex items-center text-gray-600 hover:text-theme-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-theme-600"
               >
                 <Mail className="h-5 w-5 mr-2" />
-                contact@example.com
+                sales@khodalgems.com
               </a>
             </div>
           </div>
 
           {/* Messaging Apps */}
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">Message Us</h3>
             <div className="grid grid-cols-2 gap-3">
               <a
                 href="https://wa.me/+919409658456"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-green-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-green-600"
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 WhatsApp
               </a>
               <a
                 href="skype:vadsak_vin?chat"
-                className="flex items-center text-gray-600 hover:text-blue-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-600"
               >
                 <Video className="h-5 w-5 mr-2" />
                 Skype
@@ -181,14 +181,14 @@ export default function ContactUs() {
                 href="https://t.me/khodalgems"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-blue-500"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-500"
               >
                 <Send className="h-5 w-5 mr-2" />
                 Telegram
               </a>
               <a
                 href="weixin://dl/chat?khodalgems"
-                className="flex items-center text-gray-600 hover:text-green-500"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-green-500"
               >
                 <MessageSquare className="h-5 w-5 mr-2" />
                 WeChat
@@ -197,7 +197,7 @@ export default function ContactUs() {
                 href="https://line.me/ti/p/n9QS7xxuin"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-green-500"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-green-500"
               >
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Line
@@ -206,14 +206,14 @@ export default function ContactUs() {
           </div>
 
           {/* Social Media */}
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">Follow Us</h3>
             <div className="grid grid-cols-2 gap-3">
               <a
                 href="https://www.facebook.com/profile.php?id=61550287686175"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-blue-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-600"
               >
                 <Facebook className="h-5 w-5 mr-2" />
                 Facebook
@@ -222,7 +222,7 @@ export default function ContactUs() {
                 href="https://www.instagram.com/khodal_gems_mumbai/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-pink-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-pink-600"
               >
                 <Instagram className="h-5 w-5 mr-2" />
                 Instagram
@@ -231,7 +231,7 @@ export default function ContactUs() {
                 href="https://www.youtube.com/channel/UCp6bkMkNaQ90k-OT9KbKIXQ"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-red-600"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-red-600"
               >
                 <Youtube className="h-5 w-5 mr-2" />
                 YouTube
@@ -240,7 +240,7 @@ export default function ContactUs() {
                 href="https://x.com/khodalgems"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900"
               >
                 <svg
                   className="h-5 w-5 mr-2"
