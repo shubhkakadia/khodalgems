@@ -681,18 +681,11 @@ export default function Wishlist() {
                       </td>
                       <td className="border border-gray-300">
                         <div className="flex justify-around items-center">
-                          {/* Favorite Button */}
                           <button
                             className="text-theme-600"
                             onClick={() => toggleCart(stone.stoneno)}
                           >
-                            <img
-                              src={
-                                cartToggled[stone.stoneno] ? cartselected : cart
-                              }
-                              alt="cart"
-                              className="h-4"
-                            />
+                            <ShoppingCart className={`w-4 h-4 `} />
                           </button>
                         </div>
                       </td>
@@ -843,7 +836,9 @@ export default function Wishlist() {
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">entries</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    entries
+                  </span>
                 </div>
 
                 {/* Pagination Navigation - Responsive */}

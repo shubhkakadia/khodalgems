@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Phone,
   Sheet,
+  ShoppingCart,
   Star,
   Trash2,
 } from "lucide-react";
@@ -679,13 +680,7 @@ export default function Cart() {
                             className="text-theme-600"
                             onClick={() => toggleFav(stone.stoneno)}
                           >
-                            <img
-                              src={
-                                favToggled[stone.stoneno] ? favselected : fav
-                              }
-                              alt="wishlist"
-                              className="h-4"
-                            />
+                            <Star className={` w-4 h-4`} />
                           </button>
                         </div>
                       </td>

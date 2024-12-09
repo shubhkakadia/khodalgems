@@ -1,6 +1,15 @@
 // Settings.jsx
-import React, { useState } from "react";
-import { Bell, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import React, { useRef, useState } from "react";
+import {
+  Bell,
+  Phone,
+  Lock,
+  Eye,
+  EyeOff,
+  X,
+  Upload,
+  Verified,
+} from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
@@ -188,18 +197,27 @@ export default function Settings() {
   const [isEditing, setIsEditing] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [newsletterSubscription, setNewsletterSubscription] = useState(true);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const fileInputRef = useRef(null);
+  const [verified, setVerified] = useState(false);
   const navigate = useNavigate();
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const [profileData, setProfileData] = useState({
     firstName: "Shubh",
     lastName: "Kakadia",
+    email: "shubh@kayracreation.com",
     designation: "Manager",
     companyName: "kayra Creation",
     address: "123 Business Street",
     countryCode: "+1",
     phoneNumber: "234-567-8900",
     website: "www.kayracreation.com",
-    username: "johndoe123",
+    username: "shubhkakadia",
+    password: "password123",
     businessType: "Jewellery retailer",
   });
 
@@ -262,17 +280,37 @@ export default function Settings() {
       newErrors.website = "Please enter a valid website";
     }
 
+    if (!validateEmail(profileData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = () => {
     if (validateForm()) {
-      setOriginalData(profileData);
-      setIsEditing(false);
-      toast.success("Settings saved successfully!");
+      setIsVerificationModalOpen(true);
     } else {
       toast.error("Please fix the errors before saving");
+    }
+  };
+
+  const handleVerification = (password) => {
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
+    if (password === profileData.password) {
+      setOriginalData(profileData);
+      setIsEditing(false);
+      setIsVerificationModalOpen(false);
+      setVerified(true);
+      toast.success("Settings saved successfully!");
+    } else {
+      setError("Incorrect password");
+      toast.error("Incorrect password. Please try again.");
     }
   };
 
@@ -316,8 +354,99 @@ export default function Settings() {
     </div>
   );
 
+  const removePhoto = () => {
+    setProfilePhoto(null);
+    setIsEditing(true);
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePhoto(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setIsEditing(true);
+    }
+  };
+  // Add email validation
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   return (
     <div className="flex w-full h-full">
+      {isVerificationModalOpen && (
+        <>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96">
+              <h3 className="text-xl font-semibold text-theme-800 mb-4">
+                Verify Changes
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Please enter your password to save changes
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleVerification(password);
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError("");
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 ${
+                        error
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-theme-500"
+                      }`}
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  {error && (
+                    <p className="text-red-500 text-xs mt-1">{error}</p>
+                  )}
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsVerificationModalOpen(false)}
+                    className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm bg-theme-600 text-white rounded-md hover:bg-theme-700"
+                  >
+                    Verify & Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
+
       <ToastContainer position="top-right" autoClose={3000} />
       <PasswordModal
         isOpen={isPasswordModalOpen}
@@ -361,8 +490,54 @@ export default function Settings() {
         <div className="space-y-6">
           <SettingsSection title="User Details">
             <div className="grid md:grid-cols-2 gap-6">
+              <div className="col-span-2 flex items-center space-x-4 mb-6">
+                <div className="relative">
+                  {profilePhoto ? (
+                    <div className="relative">
+                      <img
+                        src={profilePhoto}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover"
+                      />
+                      <button
+                        onClick={removePhoto}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-2xl text-gray-500">
+                        {profileData.firstName.charAt(0)}
+                        {profileData.lastName.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handlePhotoChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current.click()}
+                    className="px-4 py-2 text-sm bg-theme-600 text-white rounded-md hover:bg-theme-700 flex items-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Photo</span>
+                  </button>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Recommended: Square image, at least 400x400px
+                  </p>
+                </div>
+              </div>
               {renderInput("firstName", "First Name")}
               {renderInput("lastName", "Last Name")}
+              {renderInput("email", "Email Address")}
               {renderInput("designation", "Designation")}
               {renderInput("companyName", "Company Name", true)}
 

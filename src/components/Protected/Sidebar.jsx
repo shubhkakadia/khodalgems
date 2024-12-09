@@ -61,12 +61,12 @@ export default function Sidebar() {
             label="Wishlist"
             isExpanded={isExpanded}
           />
-          <SidebarItem
+          {/* <SidebarItem
             to="/orderhistory"
             icon={Clock}
             label="Order History"
             isExpanded={isExpanded}
-          />
+          /> */}
         </nav>
 
         {/* User Profile and Logout */}
