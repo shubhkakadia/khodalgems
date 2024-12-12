@@ -1,20 +1,11 @@
 // Settings.jsx
 import React, { useRef, useState } from "react";
-import {
-  Bell,
-  Phone,
-  Lock,
-  Eye,
-  EyeOff,
-  X,
-  Upload,
-  Verified,
-} from "lucide-react";
+import { Bell, Phone, Lock, Eye, EyeOff, X, Upload } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
-import { useDarkMode } from "../../context/DarkModeContext";
+// import { useDarkMode } from "../../context/DarkModeContext";
 
 const BUSINESS_TYPES = [
   "E-tailer(B2B)",
@@ -192,7 +183,7 @@ const PasswordModal = ({ isOpen, onClose }) => {
 };
 
 export default function Settings() {
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
+  // const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -200,7 +191,6 @@ export default function Settings() {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const fileInputRef = useRef(null);
-  const [verified, setVerified] = useState(false);
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -241,7 +231,7 @@ export default function Settings() {
   };
 
   const validateWebsite = (website) => {
-    return /^[a-zA-Z0-9-._~:/?#\[\]@!$&'()*+,;=]+$/.test(website);
+    return /^[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+$/.test(website);
   };
 
   const handleInputChange = (e) => {
@@ -306,7 +296,6 @@ export default function Settings() {
       setOriginalData(profileData);
       setIsEditing(false);
       setIsVerificationModalOpen(false);
-      setVerified(true);
       toast.success("Settings saved successfully!");
     } else {
       setError("Incorrect password");

@@ -345,7 +345,7 @@ export default function OrderHistory() {
                           <ExternalLink className="h-4 w-4" />
                         </button> */}
                         <button
-                        title="Download Invoice"
+                          title="Download Invoice"
                           onClick={() => downloadInvoice(order.id)}
                           className="text-gray-600 dark:text-gray-300 hover:text-gray-700"
                         >
@@ -383,7 +383,9 @@ export default function OrderHistory() {
 
           {filteredOrders.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">No orders found</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                No orders found
+              </p>
             </div>
           )}
         </div>

@@ -3,10 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import Sidebar from "./Sidebar";
 import stoneData from "../Data/diamond.json";
-import fav from "../../assets/Sidebar icons/Fav.svg";
-import cart from "../../assets/Sidebar icons/Cart.svg";
-import favselected from "../../assets/Sidebar icons/fav-selected.svg";
-import cartselected from "../../assets/Sidebar icons/cart-selected.svg";
 import diamond from "../../assets/round.png";
 import {
   ChevronLeft,

@@ -63,8 +63,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const [cartCount, setCartCount] = useState(5);
-  const [savedCount, setSavedCount] = useState(32);
-  const [stoneCount, setStoneCount] = useState(6452);
+  const [savedCount, setSavedCount] = useState(66);
+  const [stoneCount, setStoneCount] = useState(6545);
   const [activeView, setActiveView] = useState("orders");
 
   return (
@@ -78,7 +78,9 @@ export default function Dashboard() {
         <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
             <h2 className="text-4xl font-semibold text-theme-600">Dashboard</h2>
-            <p className="text-lg text-gray-400">Welcome back, Shubh Kakadia!</p>
+            <p className="text-lg text-gray-400">
+              Welcome back, Shubh Kakadia!
+            </p>
           </div>
           <div>
             <button
@@ -118,9 +120,11 @@ export default function Dashboard() {
                   <ShoppingCart className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Cart Items</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Cart Items
+                  </p>
                   <h3 className="text-2xl font-bold text-gray-900">
-                    {cartCount}
+                    {cartCount === undefined ? "0" : cartCount}
                   </h3>
                 </div>
               </div>
@@ -144,9 +148,11 @@ export default function Dashboard() {
                   <Diamond className="h-6 w-6 text-theme-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Total Diamonds</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Total Diamonds
+                  </p>
                   <h3 className="text-2xl font-bold text-gray-900">
-                    {stoneCount}
+                    {stoneCount === undefined ? "0" : stoneCount}
                   </h3>
                 </div>
               </div>
@@ -168,9 +174,11 @@ export default function Dashboard() {
                   <Star className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Wishlist</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Wishlist
+                  </p>
                   <h3 className="text-2xl font-bold text-gray-900">
-                    {savedCount}
+                    {savedCount === undefined ? 0 : savedCount}
                   </h3>
                 </div>
               </div>
@@ -191,7 +199,9 @@ export default function Dashboard() {
                 <Phone className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-3">
-                <p className="text-sm text-gray-600 dark:text-gray-300">Contact Us</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Contact Us
+                </p>
                 <h3 className="text-lg font-semibold text-gray-900">
                   24/7 Support
                 </h3>
@@ -276,86 +286,106 @@ export default function Dashboard() {
                 </div>
               </div>
               {activeView === "orders" && (
-                <button onClick={() => navigate('/orderhistory')} className="text-theme-600 hover:text-theme-700 text-sm font-medium">
-                  View All Orders
-                </button>
+                <div>
+                  {/* <button
+                    onClick={() => navigate("/orderhistory")}
+                    className="text-theme-600 hover:text-theme-700 text-sm font-medium"
+                  >
+                    View All Orders
+                  </button> */}
+                </div>
               )}
             </div>
           </div>
 
           <div className="p-4">
             {activeView === "history" ? (
-              // Purchase History Chart
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={purchaseHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="purchases"
-                      stroke="#4F46E5"
-                      name="Your Purchases"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="average"
-                      stroke="#EC4899"
-                      name="Market Average"
-                      strokeDasharray="3 3"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div>
+                {/* // Purchase History Chart */}
+                {purchaseHistory.length <= 0 ? (
+                  <div className="flex justify-center">
+                    No Purchase History!
+                  </div>
+                ) : (
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={purchaseHistory}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line
+                          type="monotone"
+                          dataKey="purchases"
+                          stroke="#4F46E5"
+                          name="Your Purchases"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="average"
+                          stroke="#EC4899"
+                          name="Market Average"
+                          strokeDasharray="3 3"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
             ) : (
-              // Recent Orders Table
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Order ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Stones/Carats
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
-                    {myOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-theme-600">
-                          {order.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {order.date}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {order.stones} stones / {order.totalCarats} cts
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {order.amount}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-theme-600">
-                          <button className="hover:text-theme-700">
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                {myOrders.length === 0 ? (
+                  <div className="flex justify-center">
+                    No recent orders found!
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Order ID
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Stones/Carats
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Amount
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                        {myOrders.map((order) => (
+                          <tr key={order.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-theme-600">
+                              {order.id}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {order.date}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {order.stones} stones / {order.totalCarats} cts
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {order.amount}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-theme-600">
+                              <button className="hover:text-theme-700">
+                                View Details
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>

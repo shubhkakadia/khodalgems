@@ -9,7 +9,7 @@ import logoutIcon from "../../assets/Sidebar icons/Logout.svg";
 import settingsIcon from "../../assets/Sidebar icons/Settings.svg";
 import logofull from "../../assets/CompanyLogo-transparent.png";
 import KayraLogo from "../../assets/KayraLogo.png";
-import Clock from "../../assets/Sidebar icons/history.png"
+// import Clock from "../../assets/Sidebar icons/history.png"
 // import { Clock } from "lucide-react";
 
 export default function Sidebar() {
@@ -75,7 +75,9 @@ export default function Sidebar() {
             <img src={KayraLogo} alt="User Icon" className="w-10 h-10" />
             {isExpanded && (
               <div>
-                <p className="mb-0 font-semibold leading-tight">Shubh Kakadia</p>
+                <p className="mb-0 font-semibold leading-tight">
+                  Shubh Kakadia
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight">
                   Kayra Creation
                 </p>

@@ -294,7 +294,9 @@ export const CustomDropdown = ({
                 </li>
               ))
             ) : (
-              <li className="px-4 py-2 text-gray-500 dark:text-gray-400">No matches found</li>
+              <li className="px-4 py-2 text-gray-500 dark:text-gray-400">
+                No matches found
+              </li>
             )}
           </ul>
         </div>
@@ -306,7 +308,6 @@ export const CustomDropdown = ({
 export default function Search() {
   const dispatch = useDispatch();
   const selections = useSelector((state) => state.search);
-
   const navigate = useNavigate();
 
   const [selectedShapes, setSelectedShapes] = useState([]);

@@ -36,7 +36,7 @@ function App() {
         />
         <Routes>
           <Route path="login" element={<Login />} />
-          {/* <Route path="contactus" element={<Contactus />} /> */}
+          {/* <Route path="contact" element={<Contactus />} /> */}
           <Route path="contact" element={<ContactUs />} />
           <Route path="aboutus" element={<Aboutus />} />
           <Route path="" element={<Home />} />

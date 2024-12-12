@@ -3,7 +3,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Play,
-  Download,
   Phone,
   ShoppingCart,
   Star,
@@ -13,6 +12,7 @@ import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import photoplaceholder from "../../assets/diamondImagePlaceholder.webp";
 
 export default function DiamondDetails() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -26,7 +26,7 @@ export default function DiamondDetails() {
     stoneno: "1",
     media: {
       photo: [
-        "https://www.google.com/imgres?q=peer%20diamond&imgurl=https%3A%2F%2Fwww.brilliance.com%2Fcdn-cgi%2Fimage%2Ff%3Dwebp%2Cwidth%3D720%2Cheight%3D720%2Cquality%3D90%2Fsites%2Fdefault%2Ffiles%2Fengagement-rings%2F4.5x3-pear-diamond-premium%2F4.5x3.0-pear-diamond-premium-melee-diamonds-v1.jpg&imgrefurl=https%3A%2F%2Fwww.brilliance.com%2Fmelee-diamond%2F4.5x3-pear-diamond-premium&docid=vtzAb-ZMl6IOXM&tbnid=D8cdAfK2UHCxAM&vet=12ahUKEwjUq9up9Y2KAxUByDgGHZY7LKUQM3oECEwQAA..i&w=720&h=720&hcb=2&ved=2ahUKEwjUq9up9Y2KAxUByDgGHZY7LKUQM3oECEwQAA",
+        "https://media.lordicon.com/icons/wired/outline/724-diamond-luxury-preciouasds.svg",
         "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.israelidiamond.co.il%2Fdiamonds-and-jewelry-companies-1%2F12-26-ps-1765139%2F&psig=AOvVaw3DkkT-hwi7uZVDjtzP3Ofl&ust=1733394897868000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKDl8av1jYoDFQAAAAAdAAAAABAJ",
       ],
       video: "/api/placeholder/800/800",
@@ -127,7 +127,6 @@ export default function DiamondDetails() {
     }
   };
 
-
   const addtocart = () => {
     if (isInCart) {
       toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
@@ -146,11 +145,6 @@ export default function DiamondDetails() {
       });
       setIsInCart(true);
     }
-  };
-
-  const viewReport = () => {
-
-    // Add logic to open report in new window
   };
 
   return (
@@ -209,6 +203,9 @@ export default function DiamondDetails() {
                       src={diamond.media.photo[activeImageIndex]}
                       alt={`Diamond view ${activeImageIndex + 1}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = photoplaceholder;
+                      }}
                     />
                     <button
                       onClick={() =>
@@ -236,7 +233,7 @@ export default function DiamondDetails() {
 
               {/* Thumbnails */}
               <div className="flex justify-center gap-2">
-                {diamond.media.photo.map((photo, index) => (
+                {diamond?.media?.photo?.map((photo, index) => (
                   <button
                     key={index}
                     onClick={() => {
@@ -253,6 +250,9 @@ export default function DiamondDetails() {
                       src={photo}
                       alt={`Thumbnail ${index + 1}`}
                       className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.target.src = photoplaceholder;
+                      }}
                     />
                   </button>
                 ))}
@@ -266,6 +266,9 @@ export default function DiamondDetails() {
                     src={diamond.media.video}
                     alt="Video thumbnail"
                     className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.target.src = photoplaceholder;
+                    }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <Play className="w-4 h-4 text-white" />
@@ -275,33 +278,37 @@ export default function DiamondDetails() {
 
               {/* Action Buttons */}
               <div className="flex gap-2 max-w-md mx-auto">
-      <button
-        onClick={addtocart}
-        className={`flex-1 flex items-center justify-center gap-1 py-1.5 border rounded-lg text-sm transition-all duration-200 ${
-          isInCart
-            ? "bg-theme-600 text-white hover:bg-theme-700 border-theme-600"
-            : "hover:bg-gray-50 border-gray-300"
-        }`}
-      >
-        <ShoppingCart className={`w-4 h-4 ${isInCart ? "animate-bounce" : ""}`} />
-        <span>{isInCart ? "Remove from Cart" : "Add to Cart"}</span>
-      </button>
-      <button
-        onClick={addtowishlist}
-        className={`flex-1 flex items-center justify-center gap-1 py-1.5 border rounded-lg text-sm transition-all duration-200 ${
-          isInWishlist
-            ? "bg-yellow-600 text-white hover:bg-yellow-700 border-yellow-600"
-            : "hover:bg-gray-50 border-gray-300"
-        }`}
-      >
-        <Star
-          className={`w-4 h-4 ${
-            isInWishlist ? "fill-current animate-pulse" : ""
-          }`}
-        />
-        <span>{isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}</span>
-      </button>
-    </div>
+                <button
+                  onClick={addtocart}
+                  className={`flex-1 flex items-center justify-center gap-1 py-1.5 border rounded-lg text-sm transition-all duration-200 ${
+                    isInCart
+                      ? "bg-theme-600 text-white hover:bg-theme-700 border-theme-600"
+                      : "hover:bg-gray-50 border-gray-300"
+                  }`}
+                >
+                  <ShoppingCart
+                    className={`w-4 h-4 ${isInCart ? "animate-bounce" : ""}`}
+                  />
+                  <span>{isInCart ? "Remove from Cart" : "Add to Cart"}</span>
+                </button>
+                <button
+                  onClick={addtowishlist}
+                  className={`flex-1 flex items-center justify-center gap-1 py-1.5 border rounded-lg text-sm transition-all duration-200 ${
+                    isInWishlist
+                      ? "bg-yellow-600 text-white hover:bg-yellow-700 border-yellow-600"
+                      : "hover:bg-gray-50 border-gray-300"
+                  }`}
+                >
+                  <Star
+                    className={`w-4 h-4 ${
+                      isInWishlist ? "fill-current animate-pulse" : ""
+                    }`}
+                  />
+                  <span>
+                    {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Right Section - Details */}
@@ -392,7 +399,9 @@ export default function DiamondDetails() {
                   Inquire Now
                 </button>
                 <a
-                  href = "https://www.gia.edu/report-check?reportno=2256789"
+                  target="_blank"
+                  rel="noreferrer"
+                  href="https://www.gia.edu/report-check?reportno=2256789"
                   className="flex items-center justify-center gap-1 px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-sm"
                 >
                   <FileText className="w-4 h-4" />

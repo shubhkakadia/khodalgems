@@ -363,7 +363,11 @@ export default function Cart() {
     const worksheet = XLSX.utils.json_to_sheet(data);
 
     // Append worksheet to workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Selected Stones in Cart");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Selected Stones in Cart"
+    );
 
     // Get current date and time
     const now = new Date();
@@ -831,7 +835,9 @@ export default function Cart() {
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">entries</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    entries
+                  </span>
                 </div>
 
                 {/* Pagination Navigation - Responsive */}

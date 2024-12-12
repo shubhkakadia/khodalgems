@@ -206,11 +206,6 @@ export default function Wishlist() {
     });
   };
 
-  const handleContactSupport = () => {
-    // Implement contact support logic
-    window.location.href = "/contact";
-  };
-
   const toggleSelectAll = () => {
     const areAllSelected = currentRows.every((stone) =>
       selected.some((item) => item.stoneno === stone.stoneno)
