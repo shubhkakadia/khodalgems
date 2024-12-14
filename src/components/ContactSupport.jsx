@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function ContactSupport ({ onClose }) {
+export default function ContactSupport({ onClose }) {
   const [formData, setFormData] = useState({
     email: "",
     name: "",
@@ -51,28 +51,43 @@ export default function ContactSupport ({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-      <div className={`bg-white p-4 rounded-2xl shadow-lg w-full max-w-md transition-transform duration-500 ${submitted ? "transform translate-y-4" : ""}`}>
+      <div
+        className={`bg-white p-4 rounded-2xl shadow-lg w-full max-w-md transition-transform duration-500 ${
+          submitted ? "transform translate-y-4" : ""
+        }`}
+      >
         {submitted ? (
           <div className="text-center">
             <div className="flex justify-end">
-              <button onClick={handleCloseSubmitted} className="text-slate-500 hover:text-slate-700">
+              <button
+                onClick={handleCloseSubmitted}
+                className="text-slate-500 hover:text-slate-700"
+              >
                 ✖
               </button>
             </div>
-            <h2 className="text-2xl font-bold text-slate-600 mb-4">Thank you!</h2>
+            <h2 className="text-2xl font-bold text-slate-600 mb-4">
+              Thank you!
+            </h2>
             <p className="text-slate-500">We will get back to you soon.</p>
           </div>
         ) : (
           <>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-slate-600">Contact Us</h2>
-              <button onClick={onClose} className="text-slate-500 hover:text-slate-700">
+              <button
+                onClick={onClose}
+                className="text-slate-500 hover:text-slate-700"
+              >
                 ✖
               </button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label htmlFor="email" className="block text-slate-600 font-bold mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-slate-600 font-bold mb-1"
+                >
                   Email
                 </label>
                 <input
@@ -81,12 +96,19 @@ export default function ContactSupport ({ onClose }) {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.email ? "border-red-500" : ""}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+                    errors.email ? "border-red-500" : ""
+                  }`}
                 />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
               <div className="mb-4">
-                <label htmlFor="name" className="block text-slate-600 font-bold mb-1">
+                <label
+                  htmlFor="name"
+                  className="block text-slate-600 font-bold mb-1"
+                >
                   Name
                 </label>
                 <input
@@ -95,12 +117,19 @@ export default function ContactSupport ({ onClose }) {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.name ? "border-red-500" : ""}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+                    errors.name ? "border-red-500" : ""
+                  }`}
                 />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                )}
               </div>
               <div className="mb-4">
-                <label htmlFor="companyName" className="block text-slate-600 font-bold mb-1">
+                <label
+                  htmlFor="companyName"
+                  className="block text-slate-600 font-bold mb-1"
+                >
                   Company Name
                 </label>
                 <input
@@ -109,12 +138,21 @@ export default function ContactSupport ({ onClose }) {
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.companyName ? "border-red-500" : ""}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+                    errors.companyName ? "border-red-500" : ""
+                  }`}
                 />
-                {errors.companyName && <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>}
+                {errors.companyName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.companyName}
+                  </p>
+                )}
               </div>
               <div className="mb-4">
-                <label htmlFor="message" className="block text-slate-600 font-bold mb-1">
+                <label
+                  htmlFor="message"
+                  className="block text-slate-600 font-bold mb-1"
+                >
                   Message
                 </label>
                 <textarea
@@ -126,7 +164,10 @@ export default function ContactSupport ({ onClose }) {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="mobileNumber" className="block text-slate-600 font-bold mb-1">
+                <label
+                  htmlFor="mobileNumber"
+                  className="block text-slate-600 font-bold mb-1"
+                >
                   Mobile Number
                 </label>
                 <input
@@ -135,9 +176,15 @@ export default function ContactSupport ({ onClose }) {
                   name="mobileNumber"
                   value={formData.mobileNumber}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.mobileNumber ? "border-red-500" : ""}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+                    errors.mobileNumber ? "border-red-500" : ""
+                  }`}
                 />
-                {errors.mobileNumber && <p className="text-red-500 text-sm mt-1">{errors.mobileNumber}</p>}
+                {errors.mobileNumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.mobileNumber}
+                  </p>
+                )}
               </div>
               <div className="flex justify-center">
                 <button
@@ -153,4 +200,4 @@ export default function ContactSupport ({ onClose }) {
       </div>
     </div>
   );
-};
+}

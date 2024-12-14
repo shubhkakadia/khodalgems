@@ -1,11 +1,11 @@
-import React from 'react'
-import Navbar from './Navbar'
+import React from "react";
+import Navbar from "./Navbar";
 
 export default function Aboutus() {
   return (
     <div>
-      <Navbar/>
+      <Navbar />
       <h1>aboutus</h1>
     </div>
-  )
+  );
 }

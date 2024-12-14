@@ -365,7 +365,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full bg-main-bg">
       {isVerificationModalOpen && (
         <>
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -446,8 +446,8 @@ export default function Settings() {
         <Sidebar />
       </div>
 
-      <div className="flex-auto m-4 space-y-3 w-[85%] h-full">
-        <div className="sticky top-0 bg-main-bg z-[5] py-2 flex md:justify-between md:items-center md:flex-row flex-col gap-2">
+      <div className="flex-auto w-[85%]">
+        <div className="p-4 sticky top-0 bg-main-bg z-[5] py-2 flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
             <h2 className="text-4xl font-semibold pb-4 text-theme-600">
               Settings
@@ -476,7 +476,7 @@ export default function Settings() {
           </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="p-4 space-y-4">
           <SettingsSection title="User Details">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="col-span-2 flex items-center space-x-4 mb-6">

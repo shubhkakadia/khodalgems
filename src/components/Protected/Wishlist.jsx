@@ -65,6 +65,7 @@ export default function Wishlist() {
 
   const navigate = useNavigate();
   // Assuming we'll get wishlist data from an API/state management
+  // const { wishlist } = []; // Destructure stones array from JSON
   const { wishlist } = wishlistData; // Destructure stones array from JSON
   const [wishlistItems, setWishlistItems] = useState(wishlistData.wishlist); // Replace with actual wishlist data
   const [selected, setSelected] = useState([]);
@@ -386,12 +387,10 @@ export default function Wishlist() {
         <Sidebar />
       </div>
 
-      <div className="flex-auto m-4 space-y-3 w-[85%] h-full">
-        <div className="sticky top-0 bg-main-bg z-[5] py-2 flex md:justify-between md:items-center md:flex-row flex-col gap-2">
+      <div className="flex-auto w-[85%]">
+        <div className="p-4 sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
-            <h2 className="text-4xl font-semibold pb-4 text-theme-600">
-              Wishlist
-            </h2>
+            <h2 className="text-4xl font-semibold text-theme-600">Wishlist</h2>
           </div>
 
           <button
@@ -418,7 +417,7 @@ export default function Wishlist() {
 
         {/* Table Section */}
         {sortedData.length > 0 ? (
-          <div className="overflow-x-auto overflow-y-auto h-[460px] transition-all duration-300 ease-in-out">
+          <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
             <table className="table-auto border-collapse border border-gray-300 w-full sortable">
               <thead>
                 <tr className="bg-gray-100 sticky top-0 border border-gray-300 cursor-pointer">
@@ -786,231 +785,232 @@ export default function Wishlist() {
             </table>
           </div>
         ) : (
-          <div className="h-full">
-            <div className="h-[80vh] flex justify-center items-center">
-              <div className="flex gap-4 items-center">
-                <img src={diamond} alt="Diamond" />
-                <div>
-                  <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                    Your wishlist is empty!
-                  </h1>
-                  <span className="font-quicksand text-center text-gray-400 font-semibold">
-                    Add some diamonds to proceed
-                  </span>
-                </div>
-                <img src={diamond} alt="Diamond" />
+          <div className="flex justify-center items-center">
+            <div className="flex gap-4 items-center">
+              <img src={diamond} alt="Diamond" />
+              <div>
+                <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
+                  Sorry!
+                </h1>
+                <span className="font-quicksand text-center text-gray-400 font-semibold">
+                  can't find the requested search results
+                </span>
               </div>
+
+              <img src={diamond} alt="Diamond" />
             </div>
           </div>
         )}
 
-        {wishlistItems.length > 0 && (
-          <div>
-            {/* Pagination Section - Same as Stones component */}
-            {/* Pagination */}
-            <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                {/* Rows per page dropdown - Responsive */}
-                <div className="flex items-center">
-                  <label
-                    htmlFor="rowsPerPage"
-                    className="text-sm font-medium text-gray-600 dark:text-gray-300"
-                  >
-                    Show
-                  </label>
-                  <select
-                    id="rowsPerPage"
-                    value={rowsPerPage}
-                    onChange={(e) => {
-                      setRowsPerPage(parseInt(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
-                  >
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    entries
-                  </span>
-                </div>
+        <div>
+          {wishlistItems.length > 0 && (
+            <div>
+              {/* Pagination */}
+              <div className="flex flex-col bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
+                  {/* Rows per page dropdown - Responsive */}
+                  <div className="flex items-center">
+                    <label
+                      htmlFor="rowsPerPage"
+                      className="text-sm font-medium text-gray-600 dark:text-gray-300"
+                    >
+                      Show
+                    </label>
+                    <select
+                      id="rowsPerPage"
+                      value={rowsPerPage}
+                      onChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      entries
+                    </span>
+                  </div>
 
-                {/* Pagination Navigation - Responsive */}
-                <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
-                  {/* Previous Button */}
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                  {/* Pagination Navigation - Responsive */}
+                  <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
+                    {/* Previous Button */}
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
           ${
             currentPage === 1
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
               : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
-                  >
-                    <ChevronLeft className="h-5 w-5 block sm:hidden" />
-                    <span className="hidden sm:block">Previous</span>
-                  </button>
+                    >
+                      <ChevronLeft className="h-5 w-5 block sm:hidden" />
+                      <span className="hidden sm:block">Previous</span>
+                    </button>
 
-                  {/* Page Numbers - Adaptive Display */}
-                  <div className="flex items-center gap-1.5">
-                    {Array.from(
-                      { length: Math.ceil(wishlist.length / rowsPerPage) },
-                      (_, i) => i + 1
-                    )
-                      .filter((page) => {
-                        // Show more numbers on desktop, fewer on mobile
-                        const totalPages = Math.ceil(
-                          wishlist.length / rowsPerPage
-                        );
-                        const isMobile = window.innerWidth < 640; // sm breakpoint
+                    {/* Page Numbers - Adaptive Display */}
+                    <div className="flex items-center gap-1.5">
+                      {Array.from(
+                        { length: Math.ceil(wishlist?.length / rowsPerPage) },
+                        (_, i) => i + 1
+                      )
+                        .filter((page) => {
+                          // Show more numbers on desktop, fewer on mobile
+                          const totalPages = Math.ceil(
+                            wishlist?.length / rowsPerPage
+                          );
+                          const isMobile = window.innerWidth < 640; // sm breakpoint
 
-                        if (isMobile) {
-                          return (
-                            page === 1 ||
-                            page === totalPages ||
-                            page === currentPage ||
-                            page === currentPage - 1 ||
-                            page === currentPage + 1
-                          );
-                        } else {
-                          return (
-                            page === 1 ||
-                            page === totalPages ||
-                            page === currentPage ||
-                            page === currentPage - 1 ||
-                            page === currentPage - 2 ||
-                            page === currentPage + 1 ||
-                            page === currentPage + 2
-                          );
-                        }
-                      })
-                      .map((page, index, array) => (
-                        <React.Fragment key={page}>
-                          {index > 0 && array[index - 1] !== page - 1 && (
-                            <span className="px-0.5 text-gray-400">...</span>
-                          )}
-                          <button
-                            onClick={() => setCurrentPage(page)}
-                            className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                          if (isMobile) {
+                            return (
+                              page === 1 ||
+                              page === totalPages ||
+                              page === currentPage ||
+                              page === currentPage - 1 ||
+                              page === currentPage + 1
+                            );
+                          } else {
+                            return (
+                              page === 1 ||
+                              page === totalPages ||
+                              page === currentPage ||
+                              page === currentPage - 1 ||
+                              page === currentPage - 2 ||
+                              page === currentPage + 1 ||
+                              page === currentPage + 2
+                            );
+                          }
+                        })
+                        .map((page, index, array) => (
+                          <React.Fragment key={page}>
+                            {index > 0 && array[index - 1] !== page - 1 && (
+                              <span className="px-0.5 text-gray-400">...</span>
+                            )}
+                            <button
+                              onClick={() => setCurrentPage(page)}
+                              className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
                   ${
                     currentPage === page
                       ? "bg-theme-600 text-white"
                       : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
                   }`}
-                          >
-                            {page}
-                          </button>
-                        </React.Fragment>
-                      ))}
-                  </div>
+                            >
+                              {page}
+                            </button>
+                          </React.Fragment>
+                        ))}
+                    </div>
 
-                  {/* Next Button */}
-                  <button
-                    disabled={
-                      currentPage === Math.ceil(wishlist.length / rowsPerPage)
-                    }
-                    onClick={() =>
-                      setCurrentPage((prev) =>
-                        Math.min(
-                          prev + 1,
-                          Math.ceil(wishlist.length / rowsPerPage)
+                    {/* Next Button */}
+                    <button
+                      disabled={
+                        currentPage ===
+                        Math.ceil(wishlist?.length / rowsPerPage)
+                      }
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(
+                            prev + 1,
+                            Math.ceil(wishlist?.length / rowsPerPage)
+                          )
                         )
-                      )
-                    }
-                    className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                      }
+                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
           ${
-            currentPage === Math.ceil(wishlist.length / rowsPerPage)
+            currentPage === Math.ceil(wishlist?.length / rowsPerPage)
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
               : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
-                  >
-                    <ChevronRight className="h-5 w-5 block sm:hidden" />
-                    <span className="hidden sm:block">Next</span>
-                  </button>
+                    >
+                      <ChevronRight className="h-5 w-5 block sm:hidden" />
+                      <span className="hidden sm:block">Next</span>
+                    </button>
+                  </div>
+
+                  {/* Results Counter - Responsive */}
+                  <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
+                    <span className="font-medium">
+                      {Math.min(indexOfFirstRow + 1, wishlist?.length)}-
+                      {Math.min(indexOfLastRow, wishlist?.length)}
+                    </span>{" "}
+                    of <span className="font-medium">{wishlist?.length}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 space-y-4">
+                <div className="flex overflow-auto md:flex-row flex-col md:py-0 py-2">
+                  <div className="flex items-center justify-center">
+                    <p className="font-semibold text-theme-600 w-32">
+                      Total Pieces: {totalPieces}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <p className="font-semibold text-theme-600 w-[150px]">
+                      Total Carat: {totalCarat}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <p className="font-semibold text-theme-600 w-[200px]">
+                      Total Price: ${formatNumber(totalPrice)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <p className="font-semibold text-theme-600 w-[175px]">
+                      Total Rap: {formatNumber(totalRap)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <p className="font-semibold text-theme-600 w-[150px]">
+                      Discount: {totalDiscount}%
+                    </p>
+                  </div>
                 </div>
 
-                {/* Results Counter - Responsive */}
-                <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
-                  <span className="font-medium">
-                    {Math.min(indexOfFirstRow + 1, wishlist.length)}-
-                    {Math.min(indexOfLastRow, wishlist.length)}
-                  </span>{" "}
-                  of <span className="font-medium">{wishlist.length}</span>
-                </p>
+                <div className="flex gap-2 justify-center">
+                  {/* Search Button */}
+                  {selected.length > 0 && (
+                    <>
+                      <div className="flex justify-center">
+                        <button
+                          title="add to wishlist"
+                          onClick={addtocart}
+                          className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="flex justify-center">
+                        <button
+                          title="Remove from wishlist"
+                          onClick={removefromcart}
+                          className="bg-red-400 md:text-sm text-xs text-white p-2 rounded-md hover:bg-red-500"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="flex justify-center">
+                        <button
+                          title="Export to Excel"
+                          onClick={exportToExcel}
+                          className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
+                        >
+                          <Sheet className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Totals */}
-            <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 space-y-4">
-              <div className="flex overflow-auto">
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-32">
-                    Total Pieces: {totalPieces}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Total Carat: {totalCarat}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Total Price: ${formatNumber(totalPrice)}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Total Rap: {formatNumber(totalRap)}
-                  </p>
-                </div>
-                <div className="flex items-center justify-center mt-2">
-                  <p className="font-semibold text-theme-600 w-[175px]">
-                    Discount: {totalDiscount}%
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2 justify-center">
-                {/* Search Button */}
-                {selected.length > 0 && (
-                  <>
-                    <div className="flex justify-center">
-                      <button
-                        title="add to wishlist"
-                        onClick={addtocart}
-                        className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="flex justify-center">
-                      <button
-                        title="Remove from wishlist"
-                        onClick={removefromcart}
-                        className="bg-red-400 md:text-sm text-xs text-white p-2 rounded-md hover:bg-red-500"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="flex justify-center">
-                      <button
-                        title="Export to Excel"
-                        onClick={exportToExcel}
-                        className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
-                      >
-                        <Sheet className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

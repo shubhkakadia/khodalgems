@@ -4,7 +4,7 @@ import pear from "../assets/pear.png";
 import oval from "../assets/oval.png";
 import cushion from "../assets/cushion.png";
 import princess from "../assets/princess.png";
-import radiant from "../assets/radiant.png"
+import radiant from "../assets/radiant.png";
 
 const Loader = () => {
   const [currentImage, setCurrentImage] = useState(0);

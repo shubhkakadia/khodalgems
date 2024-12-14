@@ -7,8 +7,12 @@ export default function ProductNotFound() {
       <div className="flex gap-4 items-center">
         <img src={diamond} alt="Diamond" />
         <div>
-          <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">Sorry!</h1>
-          <span className="font-quicksand text-center text-gray-400 font-semibold">can't find the requested product</span>
+          <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
+            Sorry!
+          </h1>
+          <span className="font-quicksand text-center text-gray-400 font-semibold">
+            can't find the requested product
+          </span>
         </div>
 
         <img src={diamond} alt="Diamond" />

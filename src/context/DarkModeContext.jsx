@@ -1,5 +1,5 @@
 // context/DarkModeContext.jsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const DarkModeContext = createContext();
 
@@ -8,26 +8,26 @@ export function DarkModeProvider({ children }) {
 
   useEffect(() => {
     // Check if user has a saved preference
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    const savedDarkMode = localStorage.getItem("darkMode") === "true";
     setIsDarkMode(savedDarkMode);
-    
+
     // Apply dark mode class if needed
     if (savedDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     }
   }, []);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(prev => {
+    setIsDarkMode((prev) => {
       const newValue = !prev;
-      localStorage.setItem('darkMode', newValue);
-      
+      localStorage.setItem("darkMode", newValue);
+
       if (newValue) {
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.add("dark");
       } else {
-        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove("dark");
       }
-      
+
       return newValue;
     });
   };

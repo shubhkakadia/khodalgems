@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import Sidebar from "./Sidebar";
@@ -14,9 +14,14 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading, setSuccess, setError } from "../state/stockAPI.js";
+import axios from "axios";
 
 export default function Stones() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  // const stones = [];
   const { stones } = stoneData; // Destructure stones array from JSON
   const [selected, setSelected] = useState([]);
   const [favToggled, setFavToggled] = useState({});
@@ -27,6 +32,7 @@ export default function Stones() {
     column: null,
     direction: "asc",
   });
+  const stock = useSelector((state) => state.stock);
 
   const clarityOrder = [
     "FL",
@@ -64,7 +70,79 @@ export default function Stones() {
   // Pagination
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = stones.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = stones?.slice(indexOfFirstRow, indexOfLastRow);
+
+  async function fetchStock() {
+    try {
+      // Set loading state when the API call starts
+      dispatch(setLoading(true));
+
+      // Prepare the request data
+      const data = JSON.stringify({
+        Shape: "",
+        Color: "",
+        Intensity: "",
+        Overtone: "",
+        FancyColor: "",
+        Clarity: "",
+        FromToCtsSize: "",
+        FromCts: 0.0,
+        ToCts: 0.0,
+        Cut: "",
+        Polish: "",
+        Symmetry: "",
+        Flr: "",
+        HandA: "",
+        EyeClean: "",
+        Lab: "",
+        Location: "",
+      });
+
+      // Prepare the fetch config
+      const response = await fetch(
+        `${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/StockWithPara`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: data,
+        }
+      );
+
+      // Check if the response is ok (status in the range 200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Parse the JSON response
+      const responseData = await response.json();
+
+      // Check if the response has the expected structure
+      if (responseData && responseData.status === 1) {
+        // Dispatch success action with the UserData
+        dispatch(setSuccess(responseData.UserData || []));
+        dispatch(setError(null));
+      } else {
+        // Handle cases where status is not 1 or data is unexpected
+        dispatch(
+          setError(responseData.message || "Unexpected response format")
+        );
+        dispatch(setSuccess([]));
+      }
+    } catch (error) {
+      // Dispatch error action
+      dispatch(setError(error.message || "An error occurred"));
+      dispatch(setSuccess([]));
+    } finally {
+      // Set loading to false
+      dispatch(setLoading(false));
+    }
+  }
+
+  useEffect(() => {
+    fetchStock();
+  }, []); // Empty dependency array means this effect runs once on component mount
 
   // Handle checkbox change
   const handleSelection = (stone) => {
@@ -374,19 +452,21 @@ export default function Stones() {
     console.log(selected, "added to cart");
   };
 
+  console.log(stock, "stock");
+
   return (
-    <div className="flex w-full h-svh">
+    <div className="flex w-full h-full">
       <div className="flex-none md:w-20 w-14">
         <Sidebar />
       </div>
 
-      <div className="flex-auto m-4 space-y-3 w-[85%] h-full">
-        <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
+      <div className="flex-auto w-[85%]">
+        <div className="p-4 sticky top-0 z-[5] bg-main-bg flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
             <h2 className="text-4xl font-semibold text-theme-600">Stones</h2>
             <Link
               to={"/search"}
-              className="text-md font-semibold pb-4 text-theme-600 underline "
+              className="text-md font-semibold text-theme-600 underline"
             >
               modify search
             </Link>
@@ -416,7 +496,7 @@ export default function Stones() {
 
         {/* Table */}
         {sortedData.length > 0 ? (
-          <div className="overflow-x-auto overflow-y-auto h-[460px] transition-all duration-300 ease-in-out">
+          <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
             <table className="table-auto border-collapse border border-gray-300 w-full sortable">
               <thead>
                 <tr className="bg-gray-100 sticky top-0 border border-gray-300 cursor-pointer">
@@ -792,231 +872,233 @@ export default function Stones() {
             </table>
           </div>
         ) : (
-          <div className="h-full">
-            <div className="h-[80vh] flex justify-center items-center">
-              <div className="flex gap-4 items-center">
-                <img src={diamond} alt="Diamond" />
-                <div>
-                  <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                    Sorry!
-                  </h1>
-                  <span className="font-quicksand text-center text-gray-400 font-semibold">
-                    can't find the requested search results
-                  </span>
-                </div>
-
-                <img src={diamond} alt="Diamond" />
+          <div className="flex justify-center items-center">
+            <div className="flex gap-4 items-center">
+              <img src={diamond} alt="Diamond" />
+              <div>
+                <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
+                  Sorry!
+                </h1>
+                <span className="font-quicksand text-center text-gray-400 font-semibold">
+                  can't find the requested search results
+                </span>
               </div>
+
+              <img src={diamond} alt="Diamond" />
             </div>
           </div>
         )}
 
-        {sortedData.length > 0 && (
-          <div>
-            {/* Pagination */}
-            <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                {/* Rows per page dropdown - Responsive */}
-                <div className="flex items-center">
-                  <label
-                    htmlFor="rowsPerPage"
-                    className="text-sm font-medium text-gray-600 dark:text-gray-300"
-                  >
-                    Show
-                  </label>
-                  <select
-                    id="rowsPerPage"
-                    value={rowsPerPage}
-                    onChange={(e) => {
-                      setRowsPerPage(parseInt(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
-                  >
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    entries
-                  </span>
-                </div>
+        <div>
+          {sortedData.length > 0 && (
+            <div>
+              {/* Pagination */}
+              <div className="flex flex-col bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
+                  {/* Rows per page dropdown - Responsive */}
+                  <div className="flex items-center">
+                    <label
+                      htmlFor="rowsPerPage"
+                      className="text-sm font-medium text-gray-600 dark:text-gray-300"
+                    >
+                      Show
+                    </label>
+                    <select
+                      id="rowsPerPage"
+                      value={rowsPerPage}
+                      onChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      entries
+                    </span>
+                  </div>
 
-                {/* Pagination Navigation - Responsive */}
-                <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
-                  {/* Previous Button */}
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                  {/* Pagination Navigation - Responsive */}
+                  <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
+                    {/* Previous Button */}
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
           ${
             currentPage === 1
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
               : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
-                  >
-                    <ChevronLeft className="h-5 w-5 block sm:hidden" />
-                    <span className="hidden sm:block">Previous</span>
-                  </button>
+                    >
+                      <ChevronLeft className="h-5 w-5 block sm:hidden" />
+                      <span className="hidden sm:block">Previous</span>
+                    </button>
 
-                  {/* Page Numbers - Adaptive Display */}
-                  <div className="flex items-center gap-1.5">
-                    {Array.from(
-                      { length: Math.ceil(stones.length / rowsPerPage) },
-                      (_, i) => i + 1
-                    )
-                      .filter((page) => {
-                        // Show more numbers on desktop, fewer on mobile
-                        const totalPages = Math.ceil(
-                          stones.length / rowsPerPage
-                        );
-                        const isMobile = window.innerWidth < 640; // sm breakpoint
+                    {/* Page Numbers - Adaptive Display */}
+                    <div className="flex items-center gap-1.5">
+                      {Array.from(
+                        { length: Math.ceil(stones?.length / rowsPerPage) },
+                        (_, i) => i + 1
+                      )
+                        .filter((page) => {
+                          // Show more numbers on desktop, fewer on mobile
+                          const totalPages = Math.ceil(
+                            stones?.length / rowsPerPage
+                          );
+                          const isMobile = window.innerWidth < 640; // sm breakpoint
 
-                        if (isMobile) {
-                          return (
-                            page === 1 ||
-                            page === totalPages ||
-                            page === currentPage ||
-                            page === currentPage - 1 ||
-                            page === currentPage + 1
-                          );
-                        } else {
-                          return (
-                            page === 1 ||
-                            page === totalPages ||
-                            page === currentPage ||
-                            page === currentPage - 1 ||
-                            page === currentPage - 2 ||
-                            page === currentPage + 1 ||
-                            page === currentPage + 2
-                          );
-                        }
-                      })
-                      .map((page, index, array) => (
-                        <React.Fragment key={page}>
-                          {index > 0 && array[index - 1] !== page - 1 && (
-                            <span className="px-0.5 text-gray-400">...</span>
-                          )}
-                          <button
-                            onClick={() => setCurrentPage(page)}
-                            className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                          if (isMobile) {
+                            return (
+                              page === 1 ||
+                              page === totalPages ||
+                              page === currentPage ||
+                              page === currentPage - 1 ||
+                              page === currentPage + 1
+                            );
+                          } else {
+                            return (
+                              page === 1 ||
+                              page === totalPages ||
+                              page === currentPage ||
+                              page === currentPage - 1 ||
+                              page === currentPage - 2 ||
+                              page === currentPage + 1 ||
+                              page === currentPage + 2
+                            );
+                          }
+                        })
+                        .map((page, index, array) => (
+                          <React.Fragment key={page}>
+                            {index > 0 && array[index - 1] !== page - 1 && (
+                              <span className="px-0.5 text-gray-400">...</span>
+                            )}
+                            <button
+                              onClick={() => setCurrentPage(page)}
+                              className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
                   ${
                     currentPage === page
                       ? "bg-theme-600 text-white"
                       : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
                   }`}
-                          >
-                            {page}
-                          </button>
-                        </React.Fragment>
-                      ))}
-                  </div>
+                            >
+                              {page}
+                            </button>
+                          </React.Fragment>
+                        ))}
+                    </div>
 
-                  {/* Next Button */}
-                  <button
-                    disabled={
-                      currentPage === Math.ceil(stones.length / rowsPerPage)
-                    }
-                    onClick={() =>
-                      setCurrentPage((prev) =>
-                        Math.min(
-                          prev + 1,
-                          Math.ceil(stones.length / rowsPerPage)
+                    {/* Next Button */}
+                    <button
+                      disabled={
+                        currentPage === Math.ceil(stones?.length / rowsPerPage)
+                      }
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(
+                            prev + 1,
+                            Math.ceil(stones?.length / rowsPerPage)
+                          )
                         )
-                      )
-                    }
-                    className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                      }
+                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
           ${
-            currentPage === Math.ceil(stones.length / rowsPerPage)
+            currentPage === Math.ceil(stones?.length / rowsPerPage)
               ? "bg-gray-50 text-gray-400 cursor-not-allowed"
               : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
           }`}
-                  >
-                    <ChevronRight className="h-5 w-5 block sm:hidden" />
-                    <span className="hidden sm:block">Next</span>
-                  </button>
-                </div>
+                    >
+                      <ChevronRight className="h-5 w-5 block sm:hidden" />
+                      <span className="hidden sm:block">Next</span>
+                    </button>
+                  </div>
 
-                {/* Results Counter - Responsive */}
-                <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
-                  <span className="font-medium">
-                    {Math.min(indexOfFirstRow + 1, stones.length)}-
-                    {Math.min(indexOfLastRow, stones.length)}
-                  </span>{" "}
-                  of <span className="font-medium">{stones.length}</span>
-                </p>
+                  {/* Results Counter - Responsive */}
+                  <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
+                    <span className="font-medium">
+                      {Math.min(indexOfFirstRow + 1, stones?.length)}-
+                      {Math.min(indexOfLastRow, stones?.length)}
+                    </span>{" "}
+                    of <span className="font-medium">{stones?.length}</span>
+                  </p>
+                </div>
               </div>
+
+              {/* Totals */}
+              {selected.length > 0 && (
+                <div className="md:flex justify-center bg-main-bg gap-20">
+                  <div className="flex overflow-auto md:flex-row flex-col md:py-0 py-2">
+                    <div className="flex items-center justify-center">
+                      <p className="font-semibold text-theme-600 w-32">
+                        Total Pieces: {totalPieces}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <p className="font-semibold text-theme-600 w-[150px]">
+                        Total Carat: {totalCarat}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <p className="font-semibold text-theme-600 w-[200px]">
+                        Total Price: ${formatNumber(totalPrice)}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <p className="font-semibold text-theme-600 w-[175px]">
+                        Total Rap: {formatNumber(totalRap)}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <p className="font-semibold text-theme-600 w-[150px]">
+                        Discount: {totalDiscount}%
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex gap-4 justify-center items-center">
+                      {/* Search Button */}
+                      <div className="flex justify-center">
+                        <button
+                          title="Add to Cart"
+                          onClick={addtocart}
+                          className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
+                        </button>
+                      </div>
+                      {/* Reset Button */}
+                      <div className="flex justify-center">
+                        <button
+                          title="Add to Wishlist"
+                          onClick={addtowishlist}
+                          className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                        >
+                          <Star className="h-4 w-4" />
+                        </button>
+                      </div>
+                      {/* Reset Button */}
+                      <div className="flex justify-center">
+                        <button
+                          title="Export to Excel"
+                          onClick={exportToExcel}
+                          className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
+                        >
+                          <Sheet className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Totals */}
-            {selected.length > 0 && (
-              <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 space-y-4">
-                <div className="flex overflow-auto">
-                  <div className="flex items-center justify-center mt-2">
-                    <p className="font-semibold text-theme-600 w-32">
-                      Total Pieces: {totalPieces}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center mt-2">
-                    <p className="font-semibold text-theme-600 w-[175px]">
-                      Total Carat: {totalCarat}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center mt-2">
-                    <p className="font-semibold text-theme-600 w-[175px]">
-                      Total Price: ${formatNumber(totalPrice)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center mt-2">
-                    <p className="font-semibold text-theme-600 w-[175px]">
-                      Total Rap: {formatNumber(totalRap)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center mt-2">
-                    <p className="font-semibold text-theme-600 w-[175px]">
-                      Discount: {totalDiscount}%
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 justify-center">
-                  {/* Search Button */}
-                  <div className="flex justify-center">
-                    <button
-                      title="Add to Cart"
-                      onClick={addtocart}
-                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                    </button>
-                  </div>
-                  {/* Reset Button */}
-                  <div className="flex justify-center">
-                    <button
-                      title="Add to Wishlist"
-                      onClick={addtowishlist}
-                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
-                    >
-                      <Star className="h-4 w-4" />
-                    </button>
-                  </div>
-                  {/* Reset Button */}
-                  <div className="flex justify-center">
-                    <button
-                      title="Export to Excel"
-                      onClick={exportToExcel}
-                      className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
-                    >
-                      <Sheet className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

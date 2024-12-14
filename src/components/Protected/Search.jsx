@@ -28,7 +28,6 @@ const shapeData = [
   { label: "Princess", icon: princessIcon },
   { label: "Radiant", icon: radiantIcon },
 ];
-
 const colorData = [
   "D",
   "E",
@@ -156,7 +155,6 @@ const fancyColorData = [
   "Pink-Purple",
   "Orange-Brown",
 ];
-
 export const CustomDropdown = ({
   label,
   options,
@@ -325,10 +323,8 @@ export default function Search() {
   const [selectedIntensity, setSelectedIntensity] = useState([]);
   const [selectedOvertone, setSelectedOvertone] = useState([]);
   const [selectedFancyColor, setSelectedFancyColor] = useState([]);
-
   const [rangeFrom, setRangeFrom] = useState("");
   const [rangeTo, setRangeTo] = useState("");
-
   const [foundQuantity, setFoundQuantity] = useState(1200);
 
   // Function to update the range in the desired format
@@ -458,16 +454,15 @@ export default function Search() {
   };
 
   return (
-    <div className="flex w-full">
-      {/* Sidebar */}
+    <div className="flex w-full bg-main-bg">
       <div className="flex-none md:w-20 w-14">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-auto m-4 space-y-6 w-full">
-        <div className="sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
-          <h2 className="text-4xl font-semibold pb-4 text-theme-600">
+      <div className="flex-auto w-[85%]">
+        <div className="p-4 sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col">
+          <h2 className="text-4xl font-semibold text-theme-600">
             Search Inventory
           </h2>
           <button
@@ -492,382 +487,387 @@ export default function Search() {
           </button>
         </div>
 
-        {/* Shape Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Shape</h3>
-          <div className="flex flex-wrap gap-6">
-            {shapeData.map((shape) => (
-              <div
-                key={shape.label}
-                onClick={() =>
-                  toggleSelection(
-                    selectedShapes,
-                    setSelectedShapes,
-                    shape.label
-                  )
-                }
-                className={`cursor-pointer flex flex-col items-center w-[50px] md:w-[60px] group hover:text-theme-600 ${
-                  selectedShapes.includes(shape.label)
-                    ? "text-theme-800"
-                    : "text-gray-700"
-                }`}
-              >
-                <img
-                  src={shape.icon}
-                  alt={shape.label}
-                  className={`w-10 h-10 transition-all ${
+        <div className="flex flex-col mx-4 mb-4 gap-4">
+          {/* Shape Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Shape</h3>
+            <div className="flex flex-wrap gap-6">
+              {shapeData.map((shape) => (
+                <div
+                  key={shape.label}
+                  onClick={() =>
+                    toggleSelection(
+                      selectedShapes,
+                      setSelectedShapes,
+                      shape.label
+                    )
+                  }
+                  className={`cursor-pointer flex flex-col items-center w-[50px] md:w-[60px] group hover:text-theme-600 ${
                     selectedShapes.includes(shape.label)
-                      ? "[filter:brightness(0)_saturate(100%)_invert(11%)_sepia(88%)_saturate(3619%)_hue-rotate(240deg)_brightness(93%)_contrast(98%)]"
-                      : "[filter:brightness(0)_saturate(100%)_invert(46%)_sepia(3%)_saturate(12%)_hue-rotate(314deg)_brightness(97%)_contrast(92%)]"
-                  } group-hover:[filter:brightness(0)_saturate(100%)_invert(34%)_sepia(64%)_saturate(3519%)_hue-rotate(230deg)_brightness(89%)_contrast(92%)]`}
-                />
-                <span
-                  className={`mt-1 ${
-                    selectedShapes.includes(shape.label)
-                      ? "font-semibold"
-                      : "font-normal"
+                      ? "text-theme-800"
+                      : "text-gray-700"
                   }`}
                 >
-                  {shape.label}
-                </span>
-              </div>
-            ))}
+                  <img
+                    src={shape.icon}
+                    alt={shape.label}
+                    className={`w-10 h-10 transition-all ${
+                      selectedShapes.includes(shape.label)
+                        ? "[filter:brightness(0)_saturate(100%)_invert(11%)_sepia(88%)_saturate(3619%)_hue-rotate(240deg)_brightness(93%)_contrast(98%)]"
+                        : "[filter:brightness(0)_saturate(100%)_invert(46%)_sepia(3%)_saturate(12%)_hue-rotate(314deg)_brightness(97%)_contrast(92%)]"
+                    } group-hover:[filter:brightness(0)_saturate(100%)_invert(34%)_sepia(64%)_saturate(3519%)_hue-rotate(230deg)_brightness(89%)_contrast(92%)]`}
+                  />
+                  <span
+                    className={`mt-1 ${
+                      selectedShapes.includes(shape.label)
+                        ? "font-semibold"
+                        : "font-normal"
+                    }`}
+                  >
+                    {shape.label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Color Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Color</h3>
-          <div className="flex flex-wrap gap-3">
-            {colorData.map((color) => (
-              <div
-                key={color}
-                onClick={() =>
-                  toggleSelection(selectedColors, setSelectedColors, color)
-                }
-                className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                  selectedColors.includes(color)
-                    ? "bg-theme-800 text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {color}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Fancy Color Section */}
-        <div className="flex flex-wrap xl:gap-16 gap-6">
-          <CustomDropdown
-            label="Intensity"
-            options={intensityData}
-            value={selectedIntensity}
-            setter={setSelectedIntensity}
-            id="intensity"
-            showColor={false}
-            defaultValue="Select Intensity"
-          />
-          <CustomDropdown
-            label="Overtone"
-            options={overtoneData}
-            value={selectedOvertone}
-            setter={setSelectedOvertone}
-            id="overtone"
-            showColor={false}
-            defaultValue="Select Overtone"
-          />
-          <CustomDropdown
-            label="Color"
-            options={fancyColorData}
-            value={selectedFancyColor}
-            setter={setSelectedFancyColor}
-            id="color"
-            showColor={true}
-            defaultValue="Select Color"
-          />
-        </div>
-
-        {/* Clarity Selection */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Clarity</h3>
-          <div className="flex flex-wrap gap-3">
-            {clarityData.map((clarity) => (
-              <div
-                key={clarity}
-                onClick={() =>
-                  toggleSelection(selectedClarity, setSelectedClarity, clarity)
-                }
-                className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                  selectedClarity.includes(clarity)
-                    ? "bg-theme-800 text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {clarity}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Carat Weight Selection */}
-        <div className="flex flex-wrap xl:gap-16 gap-6">
+          {/* Color Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">Carat Weight</h3>
+            <h3 className="text-lg font-semibold mb-2">Color</h3>
             <div className="flex flex-wrap gap-3">
-              {caratwtData.map((caratwt) => (
+              {colorData.map((color) => (
                 <div
-                  key={caratwt}
+                  key={color}
+                  onClick={() =>
+                    toggleSelection(selectedColors, setSelectedColors, color)
+                  }
+                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                    selectedColors.includes(color)
+                      ? "bg-theme-800 text-white"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {color}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Fancy Color Section */}
+          <div className="flex flex-wrap xl:gap-16 gap-6">
+            <CustomDropdown
+              label="Intensity"
+              options={intensityData}
+              value={selectedIntensity}
+              setter={setSelectedIntensity}
+              id="intensity"
+              showColor={false}
+              defaultValue="Select Intensity"
+            />
+            <CustomDropdown
+              label="Overtone"
+              options={overtoneData}
+              value={selectedOvertone}
+              setter={setSelectedOvertone}
+              id="overtone"
+              showColor={false}
+              defaultValue="Select Overtone"
+            />
+            <CustomDropdown
+              label="Color"
+              options={fancyColorData}
+              value={selectedFancyColor}
+              setter={setSelectedFancyColor}
+              id="color"
+              showColor={true}
+              defaultValue="Select Color"
+            />
+          </div>
+
+          {/* Clarity Selection */}
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Clarity</h3>
+            <div className="flex flex-wrap gap-3">
+              {clarityData.map((clarity) => (
+                <div
+                  key={clarity}
                   onClick={() =>
                     toggleSelection(
-                      selectedcaratwt,
-                      setSelectedcaratwt,
-                      caratwt
+                      selectedClarity,
+                      setSelectedClarity,
+                      clarity
                     )
                   }
                   className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedcaratwt.includes(caratwt)
+                    selectedClarity.includes(clarity)
                       ? "bg-theme-800 text-white"
                       : "bg-gray-100 text-gray-700"
                   }`}
                 >
-                  {caratwt}
+                  {clarity}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Custom Range Input */}
-          <div>
-            <h4 className="text-lg font-semibold mb-2">Custom Range</h4>
-            <div className="flex items-center space-x-4">
-              <div>
-                <input
-                  type="number"
-                  id="rangeFrom"
-                  value={rangeFrom}
-                  onChange={(e) => {
-                    setRangeFrom(e.target.value);
-                    updatecaratwtRange(e.target.value, rangeTo);
-                  }}
-                  placeholder="Min"
-                  className="mt-1 p-2 w-32 border border-gray-300 rounded-lg shadow-sm focus:ring-theme-600 focus:border-theme-600"
-                />
-              </div>
-              <p>to</p>
-              <div>
-                <input
-                  type="number"
-                  id="rangeTo"
-                  value={rangeTo}
-                  onChange={(e) => {
-                    setRangeTo(e.target.value);
-                    updatecaratwtRange(rangeFrom, e.target.value);
-                  }}
-                  placeholder="Max"
-                  className="mt-1 p-2 w-32 border border-gray-300 rounded-lg shadow-sm focus:ring-theme-600 focus:border-theme-600"
-                />
+          {/* Carat Weight Selection */}
+          <div className="flex flex-wrap xl:gap-16 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Carat Weight</h3>
+              <div className="flex flex-wrap gap-3">
+                {caratwtData.map((caratwt) => (
+                  <div
+                    key={caratwt}
+                    onClick={() =>
+                      toggleSelection(
+                        selectedcaratwt,
+                        setSelectedcaratwt,
+                        caratwt
+                      )
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedcaratwt.includes(caratwt)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {caratwt}
+                  </div>
+                ))}
               </div>
             </div>
+
+            {/* Custom Range Input */}
+            <div>
+              <h4 className="text-lg font-semibold mb-2">Custom Range</h4>
+              <div className="flex items-center space-x-4">
+                <div>
+                  <input
+                    type="number"
+                    id="rangeFrom"
+                    value={rangeFrom}
+                    onChange={(e) => {
+                      setRangeFrom(e.target.value);
+                      updatecaratwtRange(e.target.value, rangeTo);
+                    }}
+                    placeholder="Min"
+                    className="mt-1 p-2 w-32 border border-gray-300 rounded-lg shadow-sm focus:ring-theme-600 focus:border-theme-600"
+                  />
+                </div>
+                <p>to</p>
+                <div>
+                  <input
+                    type="number"
+                    id="rangeTo"
+                    value={rangeTo}
+                    onChange={(e) => {
+                      setRangeTo(e.target.value);
+                      updatecaratwtRange(rangeFrom, e.target.value);
+                    }}
+                    placeholder="Max"
+                    className="mt-1 p-2 w-32 border border-gray-300 rounded-lg shadow-sm focus:ring-theme-600 focus:border-theme-600"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Cut, Polish, Symmetry */}
+          <div className="flex flex-wrap xl:gap-16 gap-6">
+            {/* Cut */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Cut</h3>
+              <div className="flex flex-wrap gap-3">
+                {cutData.map((cut) => (
+                  <div
+                    key={cut}
+                    onClick={() =>
+                      toggleSelection(selectedCut, setSelectedCut, cut)
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedCut.includes(cut)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {cut}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Polish */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Polish</h3>
+              <div className="flex flex-wrap gap-3">
+                {polishData.map((polish) => (
+                  <div
+                    key={polish}
+                    onClick={() =>
+                      toggleSelection(selectedPolish, setSelectedPolish, polish)
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedPolish.includes(polish)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {polish}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Symmetry */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Symmetry</h3>
+              <div className="flex flex-wrap gap-3">
+                {symmetryData.map((symmetry) => (
+                  <div
+                    key={symmetry}
+                    onClick={() =>
+                      toggleSelection(
+                        selectedSymmetry,
+                        setSelectedSymmetry,
+                        symmetry
+                      )
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedSymmetry.includes(symmetry)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {symmetry}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Fluorescence and Hearts & Arrows and Eye Clean*/}
+          <div className="flex flex-wrap xl:gap-16 gap-6">
+            {/* Fluoresence Selection */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Fluoresence</h3>
+              <div className="flex flex-wrap gap-3">
+                {fluorescenceData.map((fluoresence) => (
+                  <div
+                    key={fluoresence}
+                    onClick={() =>
+                      toggleSelection(
+                        selectedFluorescence,
+                        setSelectedFluorescence,
+                        fluoresence
+                      )
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedFluorescence.includes(fluoresence)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {fluoresence}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Hearts & Arrows Selection */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Hearts & Arrows</h3>
+              <div className="flex flex-wrap gap-3">
+                {HnAData.map((HnA) => (
+                  <div
+                    key={HnA}
+                    onClick={() =>
+                      toggleSelection(selectedHnA, setSelectedHnA, HnA)
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedHnA.includes(HnA)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {HnA}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Eye Clean */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Eye Clean</h3>
+              <div className="flex flex-wrap gap-3">
+                {eyeCleanData.map((eye) => (
+                  <div
+                    key={eye}
+                    onClick={() =>
+                      setSelectedEyeClean((prev) => (prev === eye ? "" : eye))
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedEyeClean === eye
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {eye}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Lab and Location */}
+          <div className="flex flex-wrap xl:gap-16 gap-6">
+            {/* Lab Selection */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Lab</h3>
+              <div className="flex flex-wrap gap-3">
+                {labData.map((lab) => (
+                  <div
+                    key={lab}
+                    onClick={() =>
+                      toggleSelection(selectedLab, setSelectedLab, lab)
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedLab.includes(lab)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {lab}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Location Selection */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Location</h3>
+              <div className="flex flex-wrap gap-3">
+                {locationData.map((location) => (
+                  <div
+                    key={location}
+                    onClick={() =>
+                      toggleSelection(
+                        selectedLocation,
+                        setSelectedLocation,
+                        location
+                      )
+                    }
+                    className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
+                      selectedLocation.includes(location)
+                        ? "bg-theme-800 text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {location}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Cut, Polish, Symmetry */}
-        <div className="flex flex-wrap xl:gap-16 gap-6">
-          {/* Cut */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Cut</h3>
-            <div className="flex flex-wrap gap-3">
-              {cutData.map((cut) => (
-                <div
-                  key={cut}
-                  onClick={() =>
-                    toggleSelection(selectedCut, setSelectedCut, cut)
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedCut.includes(cut)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {cut}
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Polish */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Polish</h3>
-            <div className="flex flex-wrap gap-3">
-              {polishData.map((polish) => (
-                <div
-                  key={polish}
-                  onClick={() =>
-                    toggleSelection(selectedPolish, setSelectedPolish, polish)
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedPolish.includes(polish)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {polish}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Symmetry */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Symmetry</h3>
-            <div className="flex flex-wrap gap-3">
-              {symmetryData.map((symmetry) => (
-                <div
-                  key={symmetry}
-                  onClick={() =>
-                    toggleSelection(
-                      selectedSymmetry,
-                      setSelectedSymmetry,
-                      symmetry
-                    )
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedSymmetry.includes(symmetry)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {symmetry}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Fluorescence and Hearts & Arrows and Eye Clean*/}
-        <div className="flex flex-wrap xl:gap-16 gap-6">
-          {/* Fluoresence Selection */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Fluoresence</h3>
-            <div className="flex flex-wrap gap-3">
-              {fluorescenceData.map((fluoresence) => (
-                <div
-                  key={fluoresence}
-                  onClick={() =>
-                    toggleSelection(
-                      selectedFluorescence,
-                      setSelectedFluorescence,
-                      fluoresence
-                    )
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedFluorescence.includes(fluoresence)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {fluoresence}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Hearts & Arrows Selection */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Hearts & Arrows</h3>
-            <div className="flex flex-wrap gap-3">
-              {HnAData.map((HnA) => (
-                <div
-                  key={HnA}
-                  onClick={() =>
-                    toggleSelection(selectedHnA, setSelectedHnA, HnA)
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedHnA.includes(HnA)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {HnA}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Eye Clean */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Eye Clean</h3>
-            <div className="flex flex-wrap gap-3">
-              {eyeCleanData.map((eye) => (
-                <div
-                  key={eye}
-                  onClick={() =>
-                    setSelectedEyeClean((prev) => (prev === eye ? "" : eye))
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedEyeClean === eye
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {eye}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Lab and Location */}
-        <div className="flex flex-wrap xl:gap-16 gap-6">
-          {/* Lab Selection */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Lab</h3>
-            <div className="flex flex-wrap gap-3">
-              {labData.map((lab) => (
-                <div
-                  key={lab}
-                  onClick={() =>
-                    toggleSelection(selectedLab, setSelectedLab, lab)
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedLab.includes(lab)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {lab}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Location Selection */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Location</h3>
-            <div className="flex flex-wrap gap-3">
-              {locationData.map((location) => (
-                <div
-                  key={location}
-                  onClick={() =>
-                    toggleSelection(
-                      selectedLocation,
-                      setSelectedLocation,
-                      location
-                    )
-                  }
-                  className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
-                    selectedLocation.includes(location)
-                      ? "bg-theme-800 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {location}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Section */}
         <div className="md:flex space-x-3 justify-center sticky bottom-0 bg-main-bg py-4">
           <div className="flex gap-3 justify-center">
