@@ -67,6 +67,10 @@ export default function Dashboard() {
   const [stoneCount, setStoneCount] = useState(6545);
   const [activeView, setActiveView] = useState("orders");
 
+
+
+
+
   return (
     <div className="flex w-full bg-main-bg">
       <div className="flex-none md:w-20 w-14">

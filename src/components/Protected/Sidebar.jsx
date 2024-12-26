@@ -15,6 +15,14 @@ import KayraLogo from "../../assets/KayraLogo.png";
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
 
+
+  const handleLogout = () => {
+    // Clear the token and redirect to login
+    localStorage.removeItem('authToken');
+    window.location.href = '/';
+  };
+
+
   return (
     <div
       className={`opacity-95 z-10 fixed top-0 h-full bg-white transition duration-300 ease-out ${
@@ -96,7 +104,7 @@ export default function Sidebar() {
               </NavLink>
             )}
           </div>
-          <button
+          <button onClick={handleLogout}
             className={`flex items-center justify-center space-x-2 ${
               isExpanded ? "w-full" : "w-[75%]"
             } px-2 py-2 rounded-lg hover:border-0 text-red-500 hover:bg-red-100 border-gray-800 border`}

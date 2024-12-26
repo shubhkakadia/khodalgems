@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
 import Dashboard from "./components/Protected/Dashboard";
 import UserProtectedRoutes from "./UserProtectedRoutes";
@@ -16,42 +16,60 @@ import { ToastContainer } from "react-toastify";
 import OrderHistory from "./components/Protected/OrderHistory";
 import DiamondDetails from "./components/Protected/DiamondDetails";
 import ContactUs from "./components/Protected/Contactus";
-import { DarkModeProvider } from "./context/DarkModeContext";
+import { ProtectedRoute, TokenService } from "./TokenService";
+import Register from "./components/Register";
+import AdminPortal from "./components/Protected/AdminPortal";
 
 function App() {
   return (
-    <DarkModeProvider>
-      <div className="h-svh bg-main-bg">
-        <ToastContainer
-          position="top-center"
-          autoClose={1000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
+    <div className="h-svh bg-main-bg">
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      <Routes>
+        <Route path="login" element={<Login />} />
+        {/* <Route path="contact" element={<Contactus />} /> */}
+        <Route path="contact" element={<ContactUs />} />
+        <Route path="aboutus" element={<Aboutus />} />
+        <Route path="" element={<Home />} />
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
-        <Routes>
-          <Route path="login" element={<Login />} />
-          {/* <Route path="contact" element={<Contactus />} /> */}
-          <Route path="contact" element={<ContactUs />} />
-          <Route path="aboutus" element={<Aboutus />} />
-          <Route path="" element={<Home />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          {/* <Route path="orderhistory" element={<OrderHistory />} /> */}
-          <Route path="search" element={<Search />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="stones" element={<Stones />} />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="stonedetails/:number" element={<DiamondDetails />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      </div>
-    </DarkModeProvider>
+        {/* <Route path="orderhistory" element={<OrderHistory />} /> */}
+        <Route path="search" element={<Search />} />
+        <Route path="admin" element={<AdminPortal />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="stones" element={<Stones />} />
+        <Route path="wishlist" element={<Wishlist />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="register" element={<Register />} />
+        <Route path="stonedetails/:number" element={<DiamondDetails />} />
+        <Route path="*" element={<PageNotFound />} />
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={TokenService.getToken() ? "/dashboard" : "/login"}
+              replace
+            />
+          }
+        />
+      </Routes>
+    </div>
   );
 }
 

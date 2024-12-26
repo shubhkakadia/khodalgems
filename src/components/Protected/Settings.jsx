@@ -201,7 +201,7 @@ export default function Settings() {
     lastName: "Kakadia",
     email: "shubh@kayracreation.com",
     designation: "Manager",
-    companyName: "kayra Creation",
+    companyName: "Kayra Creation",
     address: "123 Business Street",
     countryCode: "+1",
     phoneNumber: "234-567-8900",
