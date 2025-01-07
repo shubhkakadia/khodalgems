@@ -10,7 +10,7 @@ import {
   ShoppingCart,
   Trash2,
 } from "lucide-react";
-import wishlistData from "../Data/wishlist.json";
+// import wishlistData from "../Data/wishlist.json";
 import cart from "../../assets/Sidebar icons/Cart.svg";
 import cartselected from "../../assets/Sidebar icons/cart-selected.svg";
 
@@ -66,8 +66,8 @@ export default function Wishlist() {
   const navigate = useNavigate();
   // Assuming we'll get wishlist data from an API/state management
   // const { wishlist } = []; // Destructure stones array from JSON
-  const { wishlist } = wishlistData; // Destructure stones array from JSON
-  const [wishlistItems, setWishlistItems] = useState(wishlistData.wishlist); // Replace with actual wishlist data
+  const { wishlist } = []; // Destructure stones array from JSON
+  const [wishlistItems, setWishlistItems] = useState(wishlist?.wishlist); // Replace with actual wishlist data
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -81,7 +81,7 @@ export default function Wishlist() {
   // Pagination calculations
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = wishlistItems.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = wishlistItems?.slice(indexOfFirstRow, indexOfLastRow);
 
   // Format number with commas
   const formatNumber = (num) => {
@@ -174,7 +174,7 @@ export default function Wishlist() {
   };
 
   // Calculate totals
-  const totalPieces = selected.length;
+  const totalPieces = selected?.length;
   const totalCarat = selected
     .reduce((sum, stone) => sum + parseFloat(stone.carat || 0), 0)
     .toFixed(2);
@@ -251,7 +251,7 @@ export default function Wishlist() {
 
   // Cart operations
   const addtocart = () => {
-    if (selected.length === 0) {
+    if (selected?.length === 0) {
       toast.error("Please select stones to add to cart", toastConfig);
       return;
     }
@@ -259,8 +259,8 @@ export default function Wishlist() {
     // Simulate API delay
     toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
       pending: "Adding to cart...",
-      success: `Added ${selected.length} stone${
-        selected.length > 1 ? "s" : ""
+      success: `Added ${selected?.length} stone${
+        selected?.length > 1 ? "s" : ""
       } to cart`,
       error: "Failed to add to cart",
       ...toastConfig,
@@ -270,7 +270,7 @@ export default function Wishlist() {
   };
 
   const removefromcart = () => {
-    if (selected.length === 0) {
+    if (selected?.length === 0) {
       toast.error("Please select stones to remove", toastConfig);
       return;
     }
@@ -278,8 +278,8 @@ export default function Wishlist() {
     // Simulate API delay
     toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
       pending: "Removing from cart...",
-      success: `Removed ${selected.length} stone${
-        selected.length > 1 ? "s" : ""
+      success: `Removed ${selected?.length} stone${
+        selected?.length > 1 ? "s" : ""
       } from cart`,
       error: "Failed to remove from cart",
       ...toastConfig,
@@ -289,7 +289,7 @@ export default function Wishlist() {
   };
 
   const exportToExcel = () => {
-    if (selected.length === 0) {
+    if (selected?.length === 0) {
       alert("No stones selected to export!");
       return;
     }
@@ -416,7 +416,7 @@ export default function Wishlist() {
         </div>
 
         {/* Table Section */}
-        {sortedData.length > 0 ? (
+        {sortedData?.length > 0 ? (
           <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
             <table className="table-auto border-collapse border border-gray-300 w-full sortable">
               <thead>
@@ -790,11 +790,8 @@ export default function Wishlist() {
               <img src={diamond} alt="Diamond" />
               <div>
                 <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                  Sorry!
+                  Your Wishlist is empty
                 </h1>
-                <span className="font-quicksand text-center text-gray-400 font-semibold">
-                  can't find the requested search results
-                </span>
               </div>
 
               <img src={diamond} alt="Diamond" />
@@ -803,7 +800,7 @@ export default function Wishlist() {
         )}
 
         <div>
-          {wishlistItems.length > 0 && (
+          {wishlistItems?.length > 0 && (
             <div>
               {/* Pagination */}
               <div className="flex flex-col bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
@@ -975,7 +972,7 @@ export default function Wishlist() {
 
                 <div className="flex gap-2 justify-center">
                   {/* Search Button */}
-                  {selected.length > 0 && (
+                  {selected?.length > 0 && (
                     <>
                       <div className="flex justify-center">
                         <button

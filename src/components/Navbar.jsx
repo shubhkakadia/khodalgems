@@ -10,7 +10,7 @@ export default function Login() {
   };
 
   return (
-    <div>
+    <div className="sticky top-0 z-50">
       <nav className="relative px-6 py-5 flex justify-between items-center bg-white">
         <Link to="/">
           <img
@@ -34,7 +34,7 @@ export default function Login() {
             </svg>
           </button>
         </div>
-        <ul className="hidden absolute top-1/2 right-10 transform -translate-y-1/2 -translate-x-1/2 lg:mx-auto lg:flex lg:items-center lg:w-auto lg:space-x-6">
+        <ul className="hidden absolute top-1/2 right-24 transform -translate-y-1/2 -translate-x-1/2 lg:mx-auto lg:flex lg:items-center lg:w-auto lg:space-x-16">
           <li>
             <Link
               className="text-sm text-gray-400 hover:text-theme-950 font-bold"
@@ -43,18 +43,18 @@ export default function Login() {
               HOME
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               className="text-sm text-gray-400 hover:text-theme-950 font-bold"
               to="/aboutus"
             >
               ABOUT US
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link
               className="text-sm text-gray-400 hover:text-theme-950 font-bold"
-              to="/contactus"
+              to="/contact"
             >
               CONTACT US
             </Link>
@@ -115,7 +115,7 @@ export default function Login() {
                   HOME
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   className="text-sm text-gray-700 font-bold hover:text-blue-500"
                   to="/aboutus"
@@ -123,11 +123,11 @@ export default function Login() {
                 >
                   ABOUT US
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   className="text-sm text-gray-700 font-bold hover:text-blue-500"
-                  to="/contactus"
+                  to="/contact"
                   onClick={toggleMenu}
                 >
                   CONTACT US

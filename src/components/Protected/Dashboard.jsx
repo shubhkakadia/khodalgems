@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import {
   ShoppingCart,
@@ -10,66 +10,93 @@ import {
   Video,
   MessageSquare,
 } from "lucide-react";
-
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { useNavigate } from "react-router-dom";
-
-// Sample data
-const purchaseHistory = [
-  { month: "Jan", purchases: 4000, average: 2400 },
-  { month: "Feb", purchases: 3000, average: 2100 },
-  { month: "Mar", purchases: 2000, average: 2800 },
-  { month: "Apr", purchases: 2780, average: 3908 },
-  { month: "May", purchases: 1890, average: 4800 },
-  { month: "Jun", purchases: 2390, average: 3800 },
-];
-
-const myOrders = [
-  {
-    id: "ORD-2024-001",
-    date: "2024-03-01",
-    stones: 5,
-    totalCarats: "10.25",
-    amount: "$25,400",
-    status: "In Transit",
-  },
-  {
-    id: "ORD-2024-002",
-    date: "2024-03-02",
-    stones: 3,
-    totalCarats: "6.75",
-    amount: "$18,900",
-    status: "Processing",
-  },
-  {
-    id: "ORD-2024-003",
-    date: "2024-03-03",
-    stones: 8,
-    totalCarats: "15.50",
-    amount: "$42,000",
-    status: "Confirmed",
-  },
-];
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading, setSuccess, setError } from "../state/stockAPI.js";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-
-  const [cartCount, setCartCount] = useState(5);
-  const [savedCount, setSavedCount] = useState(66);
-  const [stoneCount, setStoneCount] = useState(6545);
+  const [cartCount, setCartCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
+  const [stoneCount, setStoneCount] = useState(0);
   const [activeView, setActiveView] = useState("orders");
+  const dispatch = useDispatch();
+  const stock = useSelector((state) => state.stock);
 
+  const fetchStock = async () => {
+    try {
+      // Set loading state when the API call starts
+      dispatch(setLoading(true));
 
+      // Prepare the request data
+      const defaultParams = {
+        Shape: "",
+        Color: "",
+        Intensity: "",
+        Overtone: "",
+        FancyColor: "",
+        Clarity: "",
+        FromToCtsSize: "",
+        FromCts: 0,
+        ToCts: 0,
+        Cut: "",
+        Polish: "",
+        Symmetry: "",
+        Flr: "",
+        HandA: "",
+        EyeClean: "",
+        Lab: "",
+        Location: "",
+      };
 
+      const config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/StockWithPara`,
+        headers: { "Content-Type": "application/json" },
+        data: defaultParams,
+      };
 
+      const response = await axios.request(config);
+
+      if (response.data && response.data.status === 1) {
+        console.log(response.data.UserData);
+        dispatch(setSuccess(response.data.UserData || []));
+        dispatch(setError(null));
+      } else {
+        dispatch(
+          setError(response.data.message || "Unexpected response format")
+        );
+        dispatch(setSuccess([]));
+      }
+    } catch (error) {
+      // Comprehensive error handling
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      dispatch(setError(errorMessage));
+      dispatch(setSuccess([]));
+
+      // Show toast notification for the error
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  useEffect(() => {
+    // Call the fetch function
+    fetchStock();
+  }, []);
+
+  console.log(stock)
 
   return (
     <div className="flex w-full bg-main-bg">
@@ -88,7 +115,7 @@ export default function Dashboard() {
           </div>
           <div>
             <button
-              onClick={() => navigate("/contact")}
+              onClick={() => navigate("/contactus")}
               className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />
@@ -96,21 +123,17 @@ export default function Dashboard() {
               <style jsx global>{`
                 @keyframes attention {
                   0% {
-                    color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
+                    color: rgb(75 85 99);
                   }
                   50% {
-                    color: rgb(79 70 229); /* text-theme-600 */
+                    color: rgb(79 70 229);
                   }
                   100% {
-                    color: rgb(75 85 99); /* text-gray-600 dark:text-gray-300 */
+                    color: rgb(75 85 99);
                   }
                 }
               `}</style>
             </button>
-            {/* <button className="p-2 hover:bg-gray-100 rounded-full relative" onClick={() => navigate('/notifications')}>
-          <Bell className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-          <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button> */}
           </div>
         </div>
 
@@ -129,7 +152,7 @@ export default function Dashboard() {
                       Cart Items
                     </p>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {cartCount === undefined ? "0" : cartCount}
+                      {cartCount}
                     </h3>
                   </div>
                 </div>
@@ -139,7 +162,6 @@ export default function Dashboard() {
                   onClick={() => navigate("/cart")}
                   className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
                 >
-                  {/* <ExternalLink className="h-4 w-4 mr-2" /> */}
                   View Cart
                 </button>
               </div>
@@ -157,7 +179,7 @@ export default function Dashboard() {
                       Total Diamonds
                     </p>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {stoneCount === undefined ? "0" : stoneCount}
+                      {stock?.success?.length > 0 ? stock?.success?.length : 0}
                     </h3>
                   </div>
                 </div>
@@ -166,7 +188,6 @@ export default function Dashboard() {
                 onClick={() => navigate("/search")}
                 className="w-full flex items-center justify-center px-4 py-2 bg-theme-600 text-white rounded-md hover:bg-theme-700 transition-colors text-sm"
               >
-                {/* <ExternalLink className="h-4 w-4 mr-2" /> */}
                 Search Diamonds
               </button>
             </div>
@@ -183,7 +204,7 @@ export default function Dashboard() {
                       Wishlist
                     </p>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {savedCount === undefined ? 0 : savedCount}
+                      {savedCount}
                     </h3>
                   </div>
                 </div>
@@ -192,7 +213,6 @@ export default function Dashboard() {
                 onClick={() => navigate("/wishlist")}
                 className="w-full flex items-center justify-center px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors text-sm"
               >
-                {/* <ExternalLink className="h-4 w-4 mr-2" /> */}
                 View Wishlist
               </button>
             </div>
@@ -259,7 +279,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Toggle View Section */}
+          {/* Activity Overview Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md md:max-w-full max-w-[300px]">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center md:flex-row flex-col gap-4">
@@ -290,109 +310,18 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
-                {activeView === "orders" && (
-                  <div>
-                    {/* <button
-                    onClick={() => navigate("/orderhistory")}
-                    className="text-theme-600 hover:text-theme-700 text-sm font-medium"
-                  >
-                    View All Orders
-                  </button> */}
-                  </div>
-                )}
               </div>
             </div>
 
             <div className="p-4">
-              {activeView === "history" ? (
-                <div>
-                  {/* // Purchase History Chart */}
-                  {purchaseHistory.length <= 0 ? (
-                    <div className="flex justify-center">
-                      No Purchase History!
-                    </div>
-                  ) : (
-                    <div className="h-[200px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={purchaseHistory}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line
-                            type="monotone"
-                            dataKey="purchases"
-                            stroke="#4F46E5"
-                            name="Your Purchases"
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="average"
-                            stroke="#EC4899"
-                            name="Market Average"
-                            strokeDasharray="3 3"
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  {myOrders.length === 0 ? (
-                    <div className="flex justify-center">
-                      No recent orders found!
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Order ID
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Date
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Stones/Carats
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Amount
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Action
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
-                          {myOrders.map((order) => (
-                            <tr key={order.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-theme-600">
-                                {order.id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {order.date}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {order.stones} stones / {order.totalCarats} cts
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {order.amount}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-theme-600">
-                                <button className="hover:text-theme-700">
-                                  View Details
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                  Coming Soon
+                </h3>
+                <p className="text-gray-500">
+                  Order activity tracking will be available shortly.
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -10,7 +10,7 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import cartData from "../Data/cart.json";
+// import cartData from "../Data/cart.json";
 import favselected from "../../assets/Sidebar icons/fav-selected.svg";
 import fav from "../../assets/Sidebar icons/Fav.svg";
 import { toast } from "react-toastify";
@@ -65,8 +65,8 @@ export default function Cart() {
   const navigate = useNavigate();
   // Assuming we'll get cart data from an API/state management
   // const cart = [];
-  const { cart } = cartData; // Destructure stones array from JSON
-  const [cartItems, setCartItems] = useState(cartData.cart); // Replace with actual cart data
+  const { cart } = []; // Destructure stones array from JSON
+  const [cartItems, setCartItems] = useState(cart?.cart); // Replace with actual cart data
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -79,7 +79,7 @@ export default function Cart() {
   // Pagination calculations
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = cartItems.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = cartItems?.slice(indexOfFirstRow, indexOfLastRow);
 
   // Format number with commas
   const formatNumber = (num) => {
@@ -172,7 +172,7 @@ export default function Cart() {
   };
 
   // Calculate totals
-  const totalPieces = selected.length;
+  const totalPieces = selected?.length;
   const totalCarat = selected
     .reduce((sum, stone) => sum + parseFloat(stone.carat || 0), 0)
     .toFixed(2);
@@ -250,15 +250,15 @@ export default function Cart() {
 
   // Add to wishlist operation
   const addtowishlist = () => {
-    if (selected.length === 0) {
+    if (selected?.length === 0) {
       toast.error("Please select stones to add to wishlist", toastConfig);
       return;
     }
 
     toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
       pending: "Adding to wishlist...",
-      success: `Added ${selected.length} stone${
-        selected.length > 1 ? "s" : ""
+      success: `Added ${selected?.length} stone${
+        selected?.length > 1 ? "s" : ""
       } to wishlist`,
       error: "Failed to add to wishlist",
       ...toastConfig,
@@ -269,15 +269,15 @@ export default function Cart() {
 
   // Remove from cart operation
   const removefromcart = () => {
-    if (selected.length === 0) {
+    if (selected?.length === 0) {
       toast.error("Please select stones to remove", toastConfig);
       return;
     }
 
     toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
       pending: "Removing from cart...",
-      success: `Removed ${selected.length} stone${
-        selected.length > 1 ? "s" : ""
+      success: `Removed ${selected?.length} stone${
+        selected?.length > 1 ? "s" : ""
       } from cart`,
       error: "Failed to remove from cart",
       ...toastConfig,
@@ -420,7 +420,7 @@ export default function Cart() {
         </div>
 
         {/* Table Section */}
-        {sortedData.length > 0 ? (
+        {sortedData?.length > 0 ? (
           <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
             <table className="table-auto border-collapse border border-gray-300 w-full sortable">
               <thead>
@@ -795,11 +795,8 @@ export default function Cart() {
               <img src={diamond} alt="Diamond" />
               <div>
                 <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                  Sorry!
+                  Your cart is empty!
                 </h1>
-                <span className="font-quicksand text-center text-gray-400 font-semibold">
-                  can't find the requested search results
-                </span>
               </div>
 
               <img src={diamond} alt="Diamond" />
@@ -808,7 +805,7 @@ export default function Cart() {
         )}
 
         <div>
-          {cartItems.length > 0 && (
+          {cartItems?.length > 0 && (
             <div>
               {/* Pagination Section - Same as Stones component */}
               {/* Pagination */}

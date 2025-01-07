@@ -5,7 +5,7 @@ import UserProtectedRoutes from "./UserProtectedRoutes";
 import PageNotFound from "./components/PageNotFound";
 import React from "react";
 import Home from "./components/Home";
-import Contactus from "./components/Contactus";
+import Contactus from "./components/Contact";
 import Aboutus from "./components/Aboutus";
 import Settings from "./components/Protected/Settings";
 import Wishlist from "./components/Protected/Wishlist";
@@ -19,6 +19,7 @@ import ContactUs from "./components/Protected/Contactus";
 import { ProtectedRoute, TokenService } from "./TokenService";
 import Register from "./components/Register";
 import AdminPortal from "./components/Protected/AdminPortal";
+import Contact from "./components/Contact";
 
 function App() {
   return (
@@ -37,8 +38,8 @@ function App() {
       />
       <Routes>
         <Route path="login" element={<Login />} />
-        {/* <Route path="contact" element={<Contactus />} /> */}
-        <Route path="contact" element={<ContactUs />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="contactus" element={<ContactUs />} />
         <Route path="aboutus" element={<Aboutus />} />
         <Route path="" element={<Home />} />
         <Route
