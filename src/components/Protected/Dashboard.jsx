@@ -24,6 +24,8 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState("orders");
   const dispatch = useDispatch();
   const stock = useSelector((state) => state.stock);
+  const user = useSelector((state) => state.user);
+
 
   const fetchStock = async () => {
     try {
@@ -96,7 +98,7 @@ export default function Dashboard() {
     fetchStock();
   }, []);
 
-  console.log(stock)
+  console.log(user)
 
   return (
     <div className="flex w-full bg-main-bg">
@@ -110,7 +112,7 @@ export default function Dashboard() {
           <div>
             <h2 className="text-4xl font-semibold text-theme-600">Dashboard</h2>
             <p className="text-lg text-gray-400">
-              Welcome back, Shubh Kakadia!
+              Welcome back, {user?.success?.first_name || "User"}
             </p>
           </div>
           <div>

@@ -1,11 +1,14 @@
 // Settings.jsx
-import React, { useRef, useState } from "react";
+import React, { memo, useRef, useState } from "react";
 import { Bell, Phone, Lock, Eye, EyeOff, X, Upload } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 // import { useDarkMode } from "../../context/DarkModeContext";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { setUserSuccess } from "../state/user";
 
 const BUSINESS_TYPES = [
   "E-tailer(B2B)",
@@ -20,17 +23,6 @@ const BUSINESS_TYPES = [
   "Retailer (10-100)",
   "Watch",
   "Wholesaler",
-];
-
-const COUNTRY_CODES = [
-  { code: "+1", country: "USA" },
-  { code: "+44", country: "UK" },
-  { code: "+91", country: "India" },
-  { code: "+86", country: "China" },
-  { code: "+81", country: "Japan" },
-  { code: "+49", country: "Germany" },
-  { code: "+33", country: "France" },
-  { code: "+61", country: "Australia" },
 ];
 
 const ToggleSwitch = ({ checked, onChange }) => (
@@ -184,43 +176,85 @@ const PasswordModal = ({ isOpen, onClose }) => {
 
 export default function Settings() {
   // const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const user = useSelector((state) => state.user.success);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [newsletterSubscription, setNewsletterSubscription] = useState(true);
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [profilePhoto, setProfilePhoto] = useState(
+    user.profile_picture || null
+  );
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const [profileData, setProfileData] = useState({
-    firstName: "Shubh",
-    lastName: "Kakadia",
-    email: "shubh@kayracreation.com",
-    designation: "Manager",
-    companyName: "Kayra Creation",
-    address: "123 Business Street",
-    countryCode: "+1",
-    phoneNumber: "234-567-8900",
-    website: "www.kayracreation.com",
-    username: "shubhkakadia",
-    password: "password123",
-    businessType: "Jewellery retailer",
-  });
-
-  const [originalData, setOriginalData] = useState({ ...profileData });
+  const [profileData, setProfileData] = useState(user);
+  const MemoizedToggleSwitch = memo(ToggleSwitch);
+  const MemoizedSettingsSection = memo(SettingsSection);
+  const dispatch = useDispatch();
+  console.log(user);
 
   const [errors, setErrors] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     designation: "",
     address: "",
-    phoneNumber: "",
+    phone_number: "",
     website: "",
   });
+
+  function updateProfileData(updateData) {
+    let data = JSON.stringify({
+      username: user.username,
+      password: password,
+      phone_number: updateData.phone_number,
+      address: updateData.address,
+      website: updateData.website,
+      first_name: updateData.first_name,
+      last_name: updateData.last_name,
+      email: updateData.email,
+      designation: updateData.designation,
+      company_name: updateData.company_name,
+      business_type: updateData.business_type,
+      notifications_toggle: updateData.notifications_toggle,
+      notifications: updateData.notifications,
+      profile_picture: updateData.profile_picture,
+    });
+
+    let config = {
+      method: "put",
+      maxBodyLength: Infinity,
+      url: `http://43.240.8.163:5000/users/${updateData.id}`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+
+    axios
+      .request(config)
+      .then((response) => {
+        console.log(JSON.stringify(response.data));
+        setIsEditing(false);
+        setIsVerificationModalOpen(false);
+        dispatch(setUserSuccess(response.data.updatedUser));
+        toast.success(response.data, {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        setError("Incorrect password");
+        toast.error(error.data, {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      });
+  }
 
   const validateName = (name) => {
     return /^[A-Za-z\s]+$/.test(name);
@@ -250,27 +284,28 @@ export default function Settings() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!validateName(profileData.firstName)) {
-      newErrors.firstName = "First name should only contain letters and spaces";
+    if (!validateName(profileData?.first_name)) {
+      newErrors.first_name =
+        "First name should only contain letters and spaces";
     }
-    if (!validateName(profileData.lastName)) {
-      newErrors.lastName = "Last name should only contain letters and spaces";
+    if (!validateName(profileData?.last_name)) {
+      newErrors.last_name = "Last name should only contain letters and spaces";
     }
-    if (!validateName(profileData.designation)) {
+    if (!validateName(profileData?.designation)) {
       newErrors.designation =
         "Designation should only contain letters and spaces";
     }
-    if (!profileData.address.trim()) {
-      newErrors.address = "Address is required";
+    if (!profileData?.address?.trim()) {
+      newErrors.address = "address is required";
     }
-    if (!validatePhone(profileData.phoneNumber)) {
-      newErrors.phoneNumber = "Please enter a valid phone number";
+    if (!validatePhone(profileData?.phone_number)) {
+      newErrors.phone_number = "Please enter a valid phone number";
     }
-    if (!validateWebsite(profileData.website)) {
+    if (!validateWebsite(profileData?.website)) {
       newErrors.website = "Please enter a valid website";
     }
 
-    if (!validateEmail(profileData.email)) {
+    if (!validateEmail(profileData?.email)) {
       newErrors.email = "Please enter a valid email address";
     }
 
@@ -291,27 +326,17 @@ export default function Settings() {
       setError("Password is required");
       return;
     }
-
-    if (password === profileData.password) {
-      setOriginalData(profileData);
-      setIsEditing(false);
-      setIsVerificationModalOpen(false);
-      toast.success("Settings saved successfully!");
-    } else {
-      setError("Incorrect password");
-      toast.error("Incorrect password. Please try again.");
-    }
+    updateProfileData(profileData);
   };
 
   const handleCancel = () => {
-    setProfileData(originalData);
     setIsEditing(false);
     setErrors({
-      firstName: "",
-      lastName: "",
+      first_name: "",
+      last_name: "",
       designation: "",
       address: "",
-      phoneNumber: "",
+      phone_number: "",
       website: "",
     });
   };
@@ -345,20 +370,46 @@ export default function Settings() {
 
   const removePhoto = () => {
     setProfilePhoto(null);
+    setProfileData((prev) => ({
+      ...prev,
+      profile_picture: null,
+    }));
     setIsEditing(true);
   };
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Add file size check
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
+        toast.error("File size should be less than 5MB");
+        return;
+      }
+
+      // Add file type check
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePhoto(reader.result);
+        const base64String = reader.result;
+        setProfilePhoto(base64String);
+        setProfileData((prev) => ({
+          ...prev,
+          profile_picture: base64String,
+        }));
+      };
+      reader.onerror = () => {
+        toast.error("Error reading file");
       };
       reader.readAsDataURL(file);
       setIsEditing(true);
     }
   };
+
   // Add email validation
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -498,8 +549,8 @@ export default function Settings() {
                   ) : (
                     <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
                       <span className="text-2xl text-gray-500">
-                        {profileData.firstName.charAt(0)}
-                        {profileData.lastName.charAt(0)}
+                        {profileData.first_name.charAt(0)}
+                        {profileData.last_name.charAt(0)}
                       </span>
                     </div>
                   )}
@@ -524,44 +575,34 @@ export default function Settings() {
                   </p>
                 </div>
               </div>
-              {renderInput("firstName", "First Name")}
-              {renderInput("lastName", "Last Name")}
-              {renderInput("email", "Email Address")}
+              {renderInput("first_name", "First Name")}
+              {renderInput("last_name", "Last Name")}
+              {renderInput("email", "Email address")}
               {renderInput("designation", "Designation")}
-              {renderInput("companyName", "Company Name", true)}
+              {user.company_name
+                ? renderInput("company_name", "Company Name", true)
+                : renderInput("company_name", "Company Name")}
 
               <div>
                 <label className="block text-sm font-medium text-theme-800 mb-1">
                   Phone Number
                 </label>
                 <div className="flex gap-2">
-                  <select
-                    name="countryCode"
-                    value={profileData.countryCode}
-                    onChange={handleInputChange}
-                    className="w-24 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 border-gray-300 focus:ring-theme-500"
-                  >
-                    {COUNTRY_CODES.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.code} ({country.country})
-                      </option>
-                    ))}
-                  </select>
                   <input
                     type="tel"
-                    name="phoneNumber"
-                    value={profileData.phoneNumber}
+                    name="phone_number"
+                    value={profileData.phone_number}
                     onChange={handleInputChange}
                     className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 ${
-                      errors.phoneNumber
+                      errors.phone_number
                         ? "border-red-500 focus:ring-red-500"
                         : "border-gray-300 focus:ring-theme-500"
                     }`}
                   />
                 </div>
-                {errors.phoneNumber && (
+                {errors.phone_number && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.phoneNumber}
+                    {errors.phone_number}
                   </p>
                 )}
               </div>
@@ -570,7 +611,7 @@ export default function Settings() {
               {renderInput("username", "Username", true)}
 
               <div className="col-span-2">
-                {renderInput("address", "Address")}
+                {renderInput("address", "address")}
               </div>
             </div>
           </SettingsSection>
@@ -582,8 +623,8 @@ export default function Settings() {
                   Business Type
                 </label>
                 <select
-                  name="businessType"
-                  value={profileData.businessType}
+                  name="business_type"
+                  value={profileData.business_type}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 border-gray-300 focus:ring-theme-500"
                 >
@@ -604,15 +645,15 @@ export default function Settings() {
                     Receive promotional letters and stock updates
                   </p>
                 </div>
-                <ToggleSwitch
-                  checked={newsletterSubscription}
-                  onChange={setNewsletterSubscription}
+                <MemoizedToggleSwitch
+                  checked={notifications}
+                  onChange={setNotifications}
                 />
               </div>
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Preferences">
+          <MemoizedSettingsSection title="Preferences">
             <div className="space-y-4">
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center space-x-3">
@@ -655,7 +696,7 @@ export default function Settings() {
                 <span>Change Password</span>
               </button>
             </div>
-          </SettingsSection>
+          </MemoizedSettingsSection>
 
           {isEditing && (
             <div className="flex justify-end space-x-3">

@@ -1,12 +1,19 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import companyLogo from "../assets/CompanyLogo-transparent.png";
 import ContactSupport from "./ContactSupport";
 import IGILogo from "../assets/IGI Logo.png";
 import GIALogo from "../assets/GIA Logo.png";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setAdminError,
+  setAdminLoading,
+  setAdminSuccess,
+} from "./state/admin.js";
+import { setUserError, setUserLoading, setUserSuccess } from "./state/user.js";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,17 +22,16 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Save token to localStorage
   const setToken = (token) => {
-    if (keepLoggedIn) {
-      localStorage.setItem('authToken', token);
-    }
-  }
+    localStorage.setItem("authToken", token);
+  };
   const handleLogin = () => {
     // Validate input
     if (!username || !password) {
-      toast.warn('Please enter both username and password', {
+      toast.warn("Please enter both username and password", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -37,7 +43,7 @@ const Login = () => {
     }
 
     // Show loading toast
-    const loadingToastId = toast.loading('Logging in...', {
+    const loadingToastId = toast.loading("Logging in...", {
       position: "top-right",
       hideProgressBar: false,
       closeOnClick: false,
@@ -67,14 +73,19 @@ const Login = () => {
         toast.dismiss(loadingToastId);
 
         // Assuming the API returns a token in response.data.token
-        const token = response.data.token;
-        
-        // Save token to localStorage
-        setToken(token);
-        
-        
+          const token = response.data.token;
+
+          // Save token to localStorage
+          setToken(token);
+
+          if (response.data.user.admin === 1) {
+            localStorage.setItem("adminToken", token);
+          }
+
+          
+
         // Show success toast
-        toast.success('Login Successful!', {
+        toast.success("Login Successful!", {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
@@ -83,7 +94,13 @@ const Login = () => {
           draggable: true,
           // onClose: () => navigate('/dashboard')
         });
-        navigate('/dashboard')
+        if (response.data.user.admin === 1) {
+          // Dispatch action to update Redux store
+          dispatch(setAdminSuccess(response.data.user));
+        }
+        // Dispatch action to update Redux store
+        dispatch(setUserSuccess(response.data.user));
+        navigate("/dashboard");
       })
       .catch((error) => {
         // Close loading toast
@@ -92,8 +109,8 @@ const Login = () => {
         // Handle login errors
         console.error(error);
         toast.error(
-          error.response?.data?.message || 
-          "Login failed. Please check your credentials.", 
+          error.response?.data?.message ||
+            "Login failed. Please check your credentials.",
           {
             position: "top-right",
             autoClose: 3000,
@@ -119,10 +136,12 @@ const Login = () => {
             className="w-[460px] h-auto"
           />
         </Link>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          handleLogin();
-        }}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
+        >
           <div>
             <label
               htmlFor="username"
@@ -223,7 +242,7 @@ const Login = () => {
         )}
       </div>
     </div>
-  );  
+  );
 };
 
 export default Login;

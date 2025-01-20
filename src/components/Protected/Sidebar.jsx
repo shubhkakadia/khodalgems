@@ -11,10 +11,12 @@ import logofull from "../../assets/CompanyLogo-transparent.png";
 import KayraLogo from "../../assets/KayraLogo.png";
 // import Clock from "../../assets/Sidebar icons/history.png"
 // import { Clock } from "lucide-react";
+import { useSelector } from "react-redux";
+import khodalgemsLogo from "../../assets/Logo black.png"
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
-
+  const user = useSelector((state) => state.user);
 
   const handleLogout = () => {
     // Clear the token and redirect to login
@@ -79,15 +81,15 @@ export default function Sidebar() {
 
         {/* User Profile and Logout */}
         <div className="flex flex-col items-center mb-4 w-[90%]">
-          <div className="flex items-center justify-around mb-4 w-full">
-            <img src={KayraLogo} alt="User Icon" className="w-10 h-10" />
+          <div className="flex items-center justify-around mb-4 w-full gap-2">
+            <img src={user.success.profile_picture || khodalgemsLogo} alt="User Icon" className="w-8 h-8" />
             {isExpanded && (
               <div>
-                <p className="mb-0 font-semibold leading-tight">
-                  Shubh Kakadia
+                <p className="mb-0 leading-tight">
+                  {user.success.first_name} {user.success.last_name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight">
-                  Kayra Creation
+                  {user.success.company_name}
                 </p>
               </div>
             )}

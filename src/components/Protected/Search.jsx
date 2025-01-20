@@ -15,6 +15,9 @@ import { resetSelection, setSelections } from "../state/searchSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useRef } from "react";
 import { Phone } from "lucide-react";
+import { setLoading, setSuccess, setError } from "../state/stockAPI.js";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const shapeData = [
   { label: "Round", icon: roundIcon },
@@ -155,6 +158,7 @@ const fancyColorData = [
   "Pink-Purple",
   "Orange-Brown",
 ];
+
 export const CustomDropdown = ({
   label,
   options,
@@ -375,6 +379,78 @@ export default function Search() {
     selectedOvertone,
     selectedFancyColor,
   ]);
+
+  const fetchStock = async () => {
+    try {
+      // Set loading state when the API call starts
+      dispatch(setLoading(true));
+
+      // Prepare the request data
+      const defaultParams = {
+        Shape: "",
+        Color: "",
+        Intensity: "",
+        Overtone: "",
+        FancyColor: "",
+        Clarity: "",
+        FromToCtsSize: "",
+        FromCts: 0,
+        ToCts: 0,
+        Cut: "",
+        Polish: "",
+        Symmetry: "",
+        Flr: "",
+        HandA: "",
+        EyeClean: "",
+        Lab: "",
+        Location: "",
+      };
+
+      const config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/StockWithPara`,
+        headers: { "Content-Type": "application/json" },
+        data: defaultParams,
+      };
+
+      const response = await axios.request(config);
+
+      if (response.data && response.data.status === 1) {
+        console.log(response.data.UserData);
+        dispatch(setSuccess(response.data.UserData || []));
+        setFoundQuantity(response.data.UserData.length);
+        dispatch(setError(null));
+      } else {
+        dispatch(
+          setError(response.data.message || "Unexpected response format")
+        );
+        dispatch(setSuccess([]));
+      }
+    } catch (error) {
+      // Comprehensive error handling
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      dispatch(setError(errorMessage));
+      dispatch(setSuccess([]));
+
+      // Show toast notification for the error
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  useEffect(() => {
+    // Call the fetch function
+    fetchStock()
+  }, []);
 
   // Toggle selection with logging
   const toggleSelection = (selectionList, setSelectionList, value) => {

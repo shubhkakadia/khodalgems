@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  ChevronRight,
   Diamond,
   Globe,
   Shield,
@@ -26,6 +25,8 @@ import Round from "../assets/Shapes/Round.svg";
 import { Link } from "react-router-dom";
 import GIALogo from "../assets/GIA Logo.png";
 import IGILogo from "../assets/IGI Logo.png";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const FloatingShapes = () => {
   const shapes = [
@@ -88,8 +89,15 @@ const FloatingShapes = () => {
   );
 };
 
-const Home = () => {
+export default function Home() {
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    AOS.init({
+      duration: 1000, // Animation duration in milliseconds
+      // once: true, // Animation triggers only once
+    });
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -124,21 +132,32 @@ const Home = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative px-6 pt-24 pb-20 mx-auto overflow-hidden max-w-7xl">
+      <section className="relative px-6 pt-24 pb-20 mx-auto overflow-hidden max-w-[90%]">
         {mounted && <FloatingShapes />}
         <div className="relative grid items-center grid-cols-1 gap-12 lg:grid-cols-2">
           <div className="z-10">
-            <h1 className="text-4xl font-bold tracking-tight text-theme-950 md:text-5xl">
+            <h1
+              data-aos="fade-up"
+              className="text-4xl font-bold tracking-tight text-theme-950 md:text-5xl"
+            >
               Certified Diamonds
             </h1>
-            <p className="mt-6 text-lg text-theme-700">
+            <p
+              data-aos="fade-up"
+              data-aos-delay="500"
+              className="mt-6 text-lg text-theme-700"
+            >
               Global leaders in manufacturing and trading certified diamonds.
               Delivering excellence through precision, quality, and trust.
             </p>
-            <div className="flex flex-wrap gap-4 mt-8">
+            <div
+              data-aos="fade-up"
+              data-aos-delay="1000"
+              className="flex flex-wrap gap-4 mt-8"
+            >
               <Link
                 to={"/dashboard"}
-                className="px-6 py-3 text-white rounded-lg bg-theme-950 hover:bg-theme-800 transition-colors"
+                className="px-6 py-3 text-white rounded-lg bg-theme-950 hover:bg-theme-600 transition-colors"
               >
                 Explore Collection
               </Link>
@@ -149,13 +168,16 @@ const Home = () => {
 
       {/* Business Specialties */}
       <section className="px-6 py-12 bg-theme-950 text-white">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="mx-auto max-w-[90%]">
+          <div
+            data-aos-delay="500"
+            className="grid grid-cols-1 gap-8 md:grid-cols-3"
+          >
             {[
               {
-                icon: <Factory className="w-6 h-6" />,
-                title: "Manufacturer",
-                description: "State-of-the-art diamond manufacturing facility",
+                icon: <Building className="w-6 h-6" />,
+                title: "Importer",
+                description: "Direct sourcing from premium suppliers",
               },
               {
                 icon: <Ship className="w-6 h-6" />,
@@ -163,14 +185,16 @@ const Home = () => {
                 description: "Global diamond distribution network",
               },
               {
-                icon: <Building className="w-6 h-6" />,
-                title: "Importer",
-                description: "Direct sourcing from premium suppliers",
+                icon: <Factory className="w-6 h-6" />,
+                title: "Manufacturer",
+                description: "State-of-the-art diamond manufacturing facility",
               },
             ].map((specialty, index) => (
               <div
+                data-aos="fade-up"
+                data-aos-delay={index * 1000}
                 key={index}
-                className="p-6 text-center rounded-lg bg-theme-800"
+                className="shadow-2xl p-6 text-center rounded-2xl bg-theme-800"
               >
                 <div className="flex items-center justify-center mb-4">
                   {specialty.icon}
@@ -187,25 +211,31 @@ const Home = () => {
 
       {/* About Us Section */}
       <section className="px-6 py-20 bg-white">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[90%]">
           <div className="text-center gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="mb-6 text-3xl font-bold text-theme-950">
+              <h2
+                data-aos="fade-up"
+                className="mb-6 text-3xl font-bold text-theme-950"
+              >
                 About Us
               </h2>
-              <div className="space-y-4 text-theme-700">
+              <div
+                data-aos="fade-up"
+                data-aos-delay="300"
+                className="space-y-4 text-theme-700"
+              >
                 <p>
-                  Khodal Gems, more than 10 year old company having extensive,
+                  Khodal Gems, more than 35 year old company having extensive,
                   expertise and experience in Diamonds Industry. One of the
-                  largest purchasers of brown diamonds and known around the
-                  world for our ethical standards, we are the direct source for
-                  fresh cut, ideal cut diamonds 5 carat and under.
+                  largest purchasers of diamonds and known around the world for
+                  our ethical standards, we are the direct source for fresh cut,
+                  excellent cut diamonds 10 carat and under.
                 </p>
                 <p>
                   We deal only conflict free, natural polished diamonds from
                   only the most reputable sight holder companies and regularly
                   test our supply chain – more important now than ever before.
-                  We are one of few companies to offer brown color diamonds.
                 </p>
               </div>
             </div>
@@ -215,8 +245,11 @@ const Home = () => {
 
       {/* Features Section */}
       <section className="py-20 bg-theme-50">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="mb-12 text-3xl font-bold text-center text-theme-950">
+        <div className="mx-auto max-w-[90%]">
+          <h2
+            data-aos="fade-up"
+            className="mb-12 text-3xl font-bold text-center text-theme-950"
+          >
             Why Choose Us
           </h2>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -240,8 +273,10 @@ const Home = () => {
               },
             ].map((feature, index) => (
               <div
+                data-aos="fade-up"
+                data-aos-delay={index * 500}
                 key={index}
-                className="p-6 transition-all bg-white rounded-lg hover:shadow-xl"
+                className="shadow-xl p-6 transition-all bg-white rounded-2xl"
               >
                 <div className="p-3 mb-4 rounded-full w-fit bg-theme-50 text-theme-950">
                   {feature.icon}
@@ -258,17 +293,25 @@ const Home = () => {
 
       {/* CTA Section */}
       <section className="bg-theme-950">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[90%]">
           <div className="p-12 text-center">
-            <Award className="mx-auto mb-6 text-white w-14 h-14" />
-            <h2 className="mb-4 text-3xl font-bold text-white">
+            <Award
+              data-aos="fade-up"
+              className="mx-auto mb-6 text-white w-14 h-14"
+            />
+            <h2
+              data-aos="fade-up"
+              className="mb-4 text-3xl font-bold text-white"
+            >
               Ready to Experience Excellence?
             </h2>
-            <p className="mb-8 text-theme-100">
+            <p data-aos="fade-up" className="mb-8 text-theme-100">
               Join our network of satisfied clients worldwide
             </p>
             <Link
               to={"/contact"}
+              data-aos="fade-up"
+              data-aos-delay="1000"
               className="px-8 py-3 text-theme-950 bg-white rounded-lg hover:bg-theme-50 transition-colors"
             >
               Contact Us Today
@@ -279,7 +322,7 @@ const Home = () => {
 
       {/* Footer Section */}
       <footer className="bg-theme-50 border-t border-theme-50">
-        <div className="px-6 py-12 mx-auto max-w-7xl">
+        <div className="px-6 py-12 mx-auto max-w-[90%]">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
             {/* About Column */}
             <div>
@@ -376,6 +419,4 @@ const Home = () => {
       </footer>
     </div>
   );
-};
-
-export default Home;
+}

@@ -20,6 +20,7 @@ import { ProtectedRoute, TokenService } from "./TokenService";
 import Register from "./components/Register";
 import AdminPortal from "./components/Protected/AdminPortal";
 import Contact from "./components/Contact";
+import Test from "./components/test";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
         />
         {/* <Route path="orderhistory" element={<OrderHistory />} /> */}
         <Route path="search" element={<Search />} />
+        <Route path="test" element={<Test />} />
         <Route path="admin" element={<AdminPortal />} />
         <Route path="cart" element={<Cart />} />
         <Route path="stones" element={<Stones />} />

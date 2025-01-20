@@ -41,7 +41,7 @@ export default function Contact() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="w-full px-4 py-8 mx-auto max-w-7xl">
+      <div className="w-full px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header - Improved spacing and responsive text */}
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-theme-600 md:text-4xl">

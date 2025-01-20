@@ -3,11 +3,15 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import searchReducer from "./searchSlice";
 import stockReducer from "./stockAPI";
+import loggedInUser from "./user";
+import loggedInAdmin from "./admin";
 import { combineReducers } from "redux";
 
 const rootReducer = combineReducers({
   search: searchReducer,
   stock: stockReducer,
+  user: loggedInUser,
+  admin: loggedInAdmin,
 });
 
 const persistConfig = {
