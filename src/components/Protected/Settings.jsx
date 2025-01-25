@@ -1,6 +1,6 @@
 // Settings.jsx
 import React, { memo, useRef, useState } from "react";
-import { Bell, Phone, Lock, Eye, EyeOff, X, Upload } from "lucide-react";
+import { Bell, Phone, Lock, Eye, EyeOff, X, Upload, Bus } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
@@ -11,6 +11,7 @@ import axios from "axios";
 import { setUserSuccess } from "../state/user";
 
 const BUSINESS_TYPES = [
+  "No business type",
   "E-tailer(B2B)",
   "E-tailer(B2C)",
   "Investor",
@@ -183,9 +184,9 @@ export default function Settings() {
   const [newsletterSubscription, setNewsletterSubscription] = useState(true);
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(
-    user.profile_picture || null
+    user.profile_picture || ""
   );
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef("");
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -195,7 +196,6 @@ export default function Settings() {
   const MemoizedToggleSwitch = memo(ToggleSwitch);
   const MemoizedSettingsSection = memo(SettingsSection);
   const dispatch = useDispatch();
-  console.log(user);
 
   const [errors, setErrors] = useState({
     first_name: "",
@@ -237,7 +237,6 @@ export default function Settings() {
     axios
       .request(config)
       .then((response) => {
-        console.log(JSON.stringify(response.data));
         setIsEditing(false);
         setIsVerificationModalOpen(false);
         dispatch(setUserSuccess(response.data.updatedUser));
@@ -247,7 +246,6 @@ export default function Settings() {
         });
       })
       .catch((error) => {
-        console.log(error);
         setError("Incorrect password");
         toast.error(error.data, {
           position: "top-right",
@@ -369,10 +367,10 @@ export default function Settings() {
   );
 
   const removePhoto = () => {
-    setProfilePhoto(null);
+    setProfilePhoto("");
     setProfileData((prev) => ({
       ...prev,
-      profile_picture: null,
+      profile_picture: "",
     }));
     setIsEditing(true);
   };
@@ -414,6 +412,8 @@ export default function Settings() {
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
+
+  console.log("user", user);
 
   return (
     <div className="flex w-full bg-main-bg">
@@ -506,7 +506,7 @@ export default function Settings() {
           </div>
 
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate("/contactus")}
             className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
           >
             <Phone className="h-5 w-5 mr-2" />
@@ -530,7 +530,7 @@ export default function Settings() {
         <div className="p-4 space-y-4">
           <SettingsSection title="User Details">
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="col-span-2 flex items-center space-x-4 mb-6">
+              {/* <div className="col-span-2 flex items-center space-x-4 mb-6">
                 <div className="relative">
                   {profilePhoto ? (
                     <div className="relative">
@@ -574,7 +574,7 @@ export default function Settings() {
                     Recommended: Square image, at least 400x400px
                   </p>
                 </div>
-              </div>
+              </div> */}
               {renderInput("first_name", "First Name")}
               {renderInput("last_name", "Last Name")}
               {renderInput("email", "Email address")}
@@ -623,6 +623,7 @@ export default function Settings() {
                   Business Type
                 </label>
                 <select
+                defaultValue={BUSINESS_TYPES[0]}
                   name="business_type"
                   value={profileData.business_type}
                   onChange={handleInputChange}

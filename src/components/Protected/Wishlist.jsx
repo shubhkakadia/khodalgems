@@ -11,8 +11,6 @@ import {
   Trash2,
 } from "lucide-react";
 // import wishlistData from "../Data/wishlist.json";
-import cart from "../../assets/Sidebar icons/Cart.svg";
-import cartselected from "../../assets/Sidebar icons/cart-selected.svg";
 
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -75,8 +73,6 @@ export default function Wishlist() {
     column: null,
     direction: "asc",
   });
-
-  const [cartToggled, setCartToggled] = useState({});
 
   // Pagination calculations
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -167,10 +163,6 @@ export default function Wishlist() {
 
   const toggleCart = (stoneNo) => {
     // call api to add selected stone to cart
-    setCartToggled((prev) => ({
-      ...prev,
-      [stoneNo]: !prev[stoneNo],
-    }));
   };
 
   // Calculate totals
@@ -265,8 +257,6 @@ export default function Wishlist() {
       error: "Failed to add to cart",
       ...toastConfig,
     });
-
-    console.log(selected, "added to cart");
   };
 
   const removefromcart = () => {
@@ -284,8 +274,6 @@ export default function Wishlist() {
       error: "Failed to remove from cart",
       ...toastConfig,
     });
-
-    console.log(selected, "removed from cart");
   };
 
   const exportToExcel = () => {
@@ -394,7 +382,7 @@ export default function Wishlist() {
           </div>
 
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate("/contactus")}
             className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
           >
             <Phone className="h-5 w-5 mr-2" />

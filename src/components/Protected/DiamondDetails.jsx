@@ -163,7 +163,7 @@ export default function DiamondDetails() {
           </div>
 
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate("/contactus")}
             className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
           >
             <Phone className="h-5 w-5 mr-2" />

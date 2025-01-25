@@ -40,7 +40,6 @@ export default function ContactSupport({ onClose }) {
       setErrors(validationErrors);
       return;
     }
-    console.log(formData);
     setSubmitted(true);
   };
 

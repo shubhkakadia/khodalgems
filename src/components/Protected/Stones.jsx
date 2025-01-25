@@ -1,17 +1,11 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import Sidebar from "./Sidebar";
-import stoneData from "../Data/diamond.json";
 import diamond from "../../assets/round.png";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Phone,
-  Sheet,
-  ShoppingCart,
-  Star,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, Sheet, Star } from "lucide-react";
+import { TiStarFullOutline, TiStarOutline } from "react-icons/ti";
+import { IoCartOutline, IoCartSharp } from "react-icons/io5";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,19 +16,20 @@ import Loader from "./Loader";
 export default function Stones() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const stones = [];
-  // const { stones } = stoneData; // Destructure stones array from JSON
   const [selected, setSelected] = useState([]);
   const [favToggled, setFavToggled] = useState({});
   const [cartToggled, setCartToggled] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(100);
   const [tableHeight, setTableHeight] = useState(500);
+  const [cartArray, setCartArray] = useState([]);
+  const [wishlistArray, setWishlistArray] = useState([]);
   const [sortConfig, setSortConfig] = useState({
     column: null,
     direction: "asc",
   });
   const stock = useSelector((state) => state.stock);
+  const user = useSelector((state) => state.user);
 
   const clarityOrder = [
     "FL",
@@ -105,6 +100,250 @@ export default function Stones() {
     };
   }, []);
 
+  const fetchCartItems = async () => {
+    try {
+      dispatch(setLoading(true));
+
+      const config = {
+        method: "get",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.request(config);
+
+      if (response.data && response.data.cartItems) {
+        setCartArray(response.data.cartItems);
+      } else {
+        setCartArray([]);
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+      setCartArray([]);
+
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const addToCart = async (productIds) => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "post",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+
+      if (response.data && response.data.message) {
+        fetchCartItems();
+
+        toast.success(
+          `Diamond with stone no: ${productIds} added to cart successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to add products to cart");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const removeFromCart = async (productIds) => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "delete",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+
+      if (response.data && response.data.message) {
+        fetchCartItems();
+
+        toast.success(
+          `Diamond with stone no: ${productIds} removed from cart successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to remove products from cart");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  // Wishlist Functions
+  const fetchWishlistItems = async () => {
+    try {
+      const config = {
+        method: "get",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.request(config);
+
+      if (response.data && response.data.wishlistItems) {
+        setWishlistArray(response.data.wishlistItems);
+      } else {
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const addToWishlist = async (productIds) => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "post",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+      if (response.data && response.data.message) {
+        fetchWishlistItems();
+
+        toast.success(
+          `Diamond with stone no: ${productIds} added to wishlist successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to add products to wishlist");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const removeFromWishlist = async (productIds) => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "delete",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+      if (response.data && response.data.message) {
+        fetchWishlistItems();
+        toast.success(
+          `Diamond with stone no: ${productIds} removed from wishlist successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to remove products from wishlist");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
   const fetchStock = async () => {
     try {
       // Set loading state when the API call starts
@@ -142,7 +381,6 @@ export default function Stones() {
       const response = await axios.request(config);
 
       if (response.data && response.data.status === 1) {
-        console.log(response.data.UserData);
         dispatch(setSuccess(response.data.UserData || []));
         dispatch(setError(null));
       } else {
@@ -172,8 +410,13 @@ export default function Stones() {
   };
 
   useEffect(() => {
-    // Call the fetch function
-    fetchStock();
+    const fetchData = async () => {
+      await fetchCartItems();
+      await fetchWishlistItems();
+      await fetchStock();
+    };
+
+    fetchData();
   }, []);
 
   // Handle checkbox change
@@ -365,24 +608,6 @@ export default function Stones() {
     XLSX.writeFile(workbook, filename);
   };
 
-  // Toggle favorite button
-  const toggleFav = (stoneNo) => {
-    // call api to add selected stone to wishlist
-    setFavToggled((prev) => ({
-      ...prev,
-      [stoneNo]: !prev[stoneNo],
-    }));
-  };
-
-  // Toggle cart button
-  const toggleCart = (stoneNo) => {
-    // call api to add selected stone to cart
-    setCartToggled((prev) => ({
-      ...prev,
-      [stoneNo]: !prev[stoneNo],
-    }));
-  };
-
   const customSort = (data, column, direction) => {
     const sortedData = [...data];
 
@@ -487,41 +712,37 @@ export default function Stones() {
     progress: undefined,
   };
 
-  const addtowishlist = () => {
+  const addtowishlistfunction = async () => {
     if (selected.length === 0) {
       toast.error("Please select stones to add to wishlist", toastConfig);
       return;
     }
 
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      pending: "Adding to wishlist...",
-      success: `Added ${selected.length} stone${
-        selected.length > 1 ? "s" : ""
-      } to wishlist`,
-      error: "Failed to add to wishlist",
-      ...toastConfig,
-    });
-
-    console.log(selected, "added to wishlist");
+    await addToWishlist(selected.map((stone) => stone.stone_no).join(", "));
+    setSelected([]);
   };
 
-  const addtocart = () => {
+  const addtocartfunction = async () => {
     if (selected.length === 0) {
       toast.error("Please select stones to add to cart", toastConfig);
       return;
     }
+    await addToCart(selected.map((stone) => stone.stone_no).join(", "));
+    // setSelected([]);
+  };
 
-    // Simulate API delay
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      pending: "Adding to cart...",
-      success: `Added ${selected.length} stone${
-        selected.length > 1 ? "s" : ""
-      } to cart`,
-      error: "Failed to add to cart",
-      ...toastConfig,
-    });
+  const handleWishlistToggle = (stoneNo) => {
+    // Check if stone exists in wishlistArray
+    const exists = wishlistArray.some((item) => item.stone_no === stoneNo);
 
-    console.log(selected, "added to cart");
+    exists ? removeFromWishlist(stoneNo) : addToWishlist(stoneNo);
+  };
+
+  const handleCartToggle = (stoneNo) => {
+    // Check if stone exists in wishlistArray
+    const exists = cartArray.some((item) => item.stone_no === stoneNo);
+
+    exists ? removeFromCart(stoneNo) : addToCart(stoneNo);
   };
 
   const sortedData = usePaginatedAndSortedData(
@@ -582,27 +803,27 @@ export default function Stones() {
 
               <div>
                 <div className="flex gap-4 justify-center items-center">
-                  {/* Search Button */}
+                  {/* Add to Cart Button */}
                   <div className="flex justify-center">
                     <button
                       title="Add to Cart"
-                      onClick={addtocart}
+                      onClick={addtocartfunction}
                       className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
                     >
-                      <ShoppingCart className="h-4 w-4" />
+                      <IoCartOutline size={20} />
                     </button>
                   </div>
-                  {/* Reset Button */}
+                  {/* Add to Wishlist Button */}
                   <div className="flex justify-center">
                     <button
                       title="Add to Wishlist"
-                      onClick={addtowishlist}
+                      onClick={addtowishlistfunction}
                       className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
                     >
-                      <Star className="h-4 w-4" />
+                      <TiStarOutline size={20} />
                     </button>
                   </div>
-                  {/* Reset Button */}
+                  {/* Export to Excel Button */}
                   <div className="flex justify-center">
                     <button
                       title="Export to Excel"
@@ -618,7 +839,7 @@ export default function Stones() {
           )}
 
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate("/contactus")}
             className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
           >
             <Phone className="h-5 w-5 mr-2" />
@@ -866,17 +1087,33 @@ export default function Stones() {
                                 <div className="flex justify-around items-center">
                                   {/* Favorite Button */}
                                   <button
-                                    className="text-theme-600"
-                                    onClick={() => toggleFav(stone.stone_no)}
+                                    className="text-theme-600 hover:text-theme-900"
+                                    onClick={() =>
+                                      handleWishlistToggle(stone.stone_no)
+                                    }
                                   >
-                                    <Star className={`w-4 h-4`} />
+                                    {wishlistArray.some(
+                                      (item) => item.stone_no === stone.stone_no
+                                    ) ? (
+                                      <TiStarFullOutline size={20} />
+                                    ) : (
+                                      <TiStarOutline size={20} />
+                                    )}
                                   </button>
                                   {/* Cart Button */}
                                   <button
-                                    className="text-theme-600"
-                                    onClick={() => toggleCart(stone.stone_no)}
+                                    className="text-theme-600 hover:text-theme-900"
+                                    onClick={() =>
+                                      handleCartToggle(stone.stone_no)
+                                    }
                                   >
-                                    <ShoppingCart className={`w-4 h-4`} />
+                                    {cartArray.some(
+                                      (item) => item.stone_no === stone.stone_no
+                                    ) ? (
+                                      <IoCartSharp size={20} />
+                                    ) : (
+                                      <IoCartOutline size={20} />
+                                    )}
                                   </button>
                                 </div>
                               </td>

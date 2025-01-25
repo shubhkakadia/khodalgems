@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import companyLogo from "../assets/CompanyLogo-transparent.png";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function Login() {
   const [isOpen, setIsOpen] = useState(false);
+  const user = useSelector((state) => state.user.success);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -60,12 +62,19 @@ export default function Login() {
             </Link>
           </li>
         </ul>
-        {localStorage.getItem("authToken") ? (
+        {user.admin === 0 ? (
           <Link
             className="hidden lg:inline-block lg:ml-auto py-2 px-6 hover:text-theme-950 font-bold text-sm text-theme-300  transition duration-500"
             to="/dashboard"
           >
             DASHBOARD
+          </Link>
+        ) : user.admin === 1 ? (
+          <Link
+            className="hidden lg:inline-block lg:ml-auto py-2 px-6 hover:text-theme-950 font-bold text-sm text-theme-300  transition duration-500"
+            to="/admin"
+          >
+            Admin Dashboard
           </Link>
         ) : (
           <Link

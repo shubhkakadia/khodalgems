@@ -20,7 +20,6 @@ import { ProtectedRoute, TokenService } from "./TokenService";
 import Register from "./components/Register";
 import AdminPortal from "./components/Protected/AdminPortal";
 import Contact from "./components/Contact";
-import Test from "./components/test";
 
 function App() {
   return (
@@ -40,27 +39,82 @@ function App() {
       <Routes>
         <Route path="login" element={<Login />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="contactus" element={<ContactUs />} />
+        <Route
+          path="contactus"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <ContactUs />
+            </ProtectedRoute>
+          }
+        />
         <Route path="aboutus" element={<Aboutus />} />
         <Route path="" element={<Home />} />
         <Route
           path="dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminRoute={false}>
               <Dashboard />
             </ProtectedRoute>
           }
         />
         {/* <Route path="orderhistory" element={<OrderHistory />} /> */}
-        <Route path="search" element={<Search />} />
-        <Route path="test" element={<Test />} />
-        <Route path="admin" element={<AdminPortal />} />
-        <Route path="cart" element={<Cart />} />
-        <Route path="stones" element={<Stones />} />
-        <Route path="wishlist" element={<Wishlist />} />
-        <Route path="settings" element={<Settings />} />
+        <Route
+          path="search"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <Search />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin"
+          element={
+            <ProtectedRoute adminRoute={true}>
+              <AdminPortal />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="cart"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="stones"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <Stones />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="wishlist"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
         <Route path="register" element={<Register />} />
-        <Route path="stonedetails/:number" element={<DiamondDetails />} />
+        <Route
+          path="stonedetails/:number"
+          element={
+            <ProtectedRoute adminRoute={false}>
+              <DiamondDetails />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<PageNotFound />} />
         <Route
           path="*"

@@ -355,7 +355,6 @@ export default function Search() {
       Overtone: selectedOvertone,
       FancyColor: selectedFancyColor,
     };
-    console.log("Selections JSON:", selections);
     return selections;
   };
 
@@ -417,7 +416,6 @@ export default function Search() {
       const response = await axios.request(config);
 
       if (response.data && response.data.status === 1) {
-        console.log(response.data.UserData);
         dispatch(setSuccess(response.data.UserData || []));
         setFoundQuantity(response.data.UserData.length);
         dispatch(setError(null));
@@ -521,7 +519,6 @@ export default function Search() {
     };
 
     dispatch(setSelections(newSelections));
-    console.log("Selections Updated:", newSelections);
     navigate("/stones");
   };
 
@@ -542,7 +539,7 @@ export default function Search() {
             Search Inventory
           </h2>
           <button
-            onClick={() => handleNavigation("/contact")}
+            onClick={() => handleNavigation("/contactus")}
             className="flex items-center px-4 py-2 relative animate-[attention_1s_ease-in-out_infinite] hover:bg-theme-300 hover:animate-none rounded-md hover:text-white transition-colors"
           >
             <Phone className="h-5 w-5 mr-2" />

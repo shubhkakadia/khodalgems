@@ -8,22 +8,22 @@ import wishlistIcon from "../../assets/Sidebar icons/Fav.svg";
 import logoutIcon from "../../assets/Sidebar icons/Logout.svg";
 import settingsIcon from "../../assets/Sidebar icons/Settings.svg";
 import logofull from "../../assets/CompanyLogo-transparent.png";
-import KayraLogo from "../../assets/KayraLogo.png";
-// import Clock from "../../assets/Sidebar icons/history.png"
-// import { Clock } from "lucide-react";
-import { useSelector } from "react-redux";
-import khodalgemsLogo from "../../assets/Logo black.png"
+import { useDispatch, useSelector } from "react-redux";
+import khodalgemsLogo from "../../assets/Logo black.png";
+import { setUserSuccess } from "../state/user";
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
     // Clear the token and redirect to login
-    localStorage.removeItem('authToken');
-    window.location.href = '/';
-  };
+    localStorage.removeItem("authToken");
+    dispatch(setUserSuccess({}))
+    window.location.href = "/";
 
+  };
 
   return (
     <div
@@ -82,7 +82,16 @@ export default function Sidebar() {
         {/* User Profile and Logout */}
         <div className="flex flex-col items-center mb-4 w-[90%]">
           <div className="flex items-center justify-around mb-4 w-full gap-2">
-            <img src={user.success.profile_picture || khodalgemsLogo} alt="User Icon" className="w-8 h-8" />
+            {!isExpanded && (
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-md text-gray-500">
+                  {user?.success?.first_name?.charAt(0)}
+                  {user?.success?.last_name?.charAt(0)}
+                </span>
+              </div>
+            )}
+
+            {/* <img src={user.success.profile_picture || khodalgemsLogo} alt="User Icon" className="w-8 h-8" /> */}
             {isExpanded && (
               <div>
                 <p className="mb-0 leading-tight">
@@ -106,7 +115,8 @@ export default function Sidebar() {
               </NavLink>
             )}
           </div>
-          <button onClick={handleLogout}
+          <button
+            onClick={handleLogout}
             className={`flex items-center justify-center space-x-2 ${
               isExpanded ? "w-full" : "w-[75%]"
             } px-2 py-2 rounded-lg hover:border-0 text-red-500 hover:bg-red-100 border-gray-800 border`}

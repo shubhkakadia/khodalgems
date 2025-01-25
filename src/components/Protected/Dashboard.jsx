@@ -64,7 +64,6 @@ export default function Dashboard() {
       const response = await axios.request(config);
 
       if (response.data && response.data.status === 1) {
-        console.log(response.data.UserData);
         dispatch(setSuccess(response.data.UserData || []));
         dispatch(setError(null));
       } else {
@@ -97,8 +96,6 @@ export default function Dashboard() {
     // Call the fetch function
     fetchStock();
   }, []);
-
-  console.log(user)
 
   return (
     <div className="flex w-full bg-main-bg">

@@ -73,16 +73,10 @@ const Login = () => {
         toast.dismiss(loadingToastId);
 
         // Assuming the API returns a token in response.data.token
-          const token = response.data.token;
+        const token = response.data.token;
 
-          // Save token to localStorage
-          setToken(token);
-
-          if (response.data.user.admin === 1) {
-            localStorage.setItem("adminToken", token);
-          }
-
-          
+        // Save token to localStorage
+        setToken(token);
 
         // Show success toast
         toast.success("Login Successful!", {
@@ -94,13 +88,19 @@ const Login = () => {
           draggable: true,
           // onClose: () => navigate('/dashboard')
         });
+        console.log(response.data.user);
         if (response.data.user.admin === 1) {
           // Dispatch action to update Redux store
-          dispatch(setAdminSuccess(response.data.user));
+          dispatch(setUserSuccess(response.data.user));
+          // dispatch(setAdminSuccess(response.data.user));
+          // dispatch(setUserSuccess({}));
+          navigate("/admin");
+        } else {
+          // Dispatch action to update Redux store
+          dispatch(setUserSuccess(response.data.user));
+          // dispatch(setAdminSuccess({}));
+          navigate("/dashboard");
         }
-        // Dispatch action to update Redux store
-        dispatch(setUserSuccess(response.data.user));
-        navigate("/dashboard");
       })
       .catch((error) => {
         // Close loading toast

@@ -2,23 +2,15 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useSelector } from "react-redux";
 
 // Token Service for authentication and verification
 export const TokenService = {
-  // Save token to localStorage
-  setToken: (token) => {
-    localStorage.setItem('authToken', token);
-  },
-
   // Get token from localStorage
   getToken: () => {
     return localStorage.getItem('authToken');
   },
 
-  // Remove token from localStorage
-  removeToken: () => {
-    localStorage.removeItem('authToken');
-  },
 
   // Verify token with server
   verifyToken: async () => {
@@ -50,52 +42,53 @@ export const TokenService = {
   }
 };
 
+
+
 // Protected Route Component
-export const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const ProtectedRoute = ({ children, adminRoute }) => {
+  const user = useSelector((state) => state.user.success);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const verifyAccess = async () => {
       try {
-        // Verify token with server
+        // Verify token first
         const isValid = await TokenService.verifyToken();
         
-        if (isValid) {
-          setIsAuthenticated(true);
-        } else {
-          // Token is invalid or expired
+        if (!isValid) {
           TokenService.removeToken();
-          
-          // Safely check if toast is available before calling
-          // if (toast && typeof toast.error === 'function') {
-          //   toast.error('Your session has expired. Please log in again.', {
-          //     position: "top-right",
-          //     autoClose: 3000,
-          //     hideProgressBar: false,
-          //     closeOnClick: true,
-          //     pauseOnHover: true,
-          //     draggable: true,
-          //   });
-          // }
-          
-          // Redirect to login
           navigate('/login');
+          return;
         }
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        setIsAuthenticated(false);
-        navigate('/login', { replace: true });
-      } finally {
+
+        // Then check admin status from Redux
+        const isAdmin = user?.admin === 1;
+
+        // Route protection logic
+        if (adminRoute && !isAdmin) {
+          toast.error("Admin access required");
+          navigate('/dashboard');
+          return;
+        }
+
+        if (!adminRoute && isAdmin) {
+          toast.error("User access required");
+          navigate('/admin');
+          return;
+        }
+
         setIsLoading(false);
+      } catch (error) {
+        console.error('Access verification failed:', error);
+        TokenService.removeToken();
+        navigate('/login');
       }
     };
 
-    checkAuth();
-  }, [navigate]);
+    verifyAccess();
+  }, [navigate, adminRoute, user?.admin]);
 
-  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -106,8 +99,7 @@ export const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // Render children if authenticated
-  return isAuthenticated ? children : null;
+  return children;
 };
 
 // Axios Interceptor for adding token to requests
