@@ -1,72 +1,315 @@
-import React, { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Play,
-  Phone,
-  ShoppingCart,
-  Star,
-  FileText,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Play, Phone, ShoppingCart, Star, FileText } from "lucide-react";
 import Sidebar from "./Sidebar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import photoplaceholder from "../../assets/diamondImagePlaceholder.webp";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 export default function DiamondDetails() {
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [showVideo, setShowVideo] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
-  const navigate = useNavigate();
+  const [wishlistArray, setWishlistArray] = useState([]);
+  const [cartArray, setCartArray] = useState([]);
 
-  // Sample diamond data with additional fields
-  const diamond = {
-    stoneno: "1",
-    media: {
-      photo: [
-        "https://media.lordicon.com/icons/wired/outline/724-diamond-luxury-preciouasds.svg",
-        "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.israelidiamond.co.il%2Fdiamonds-and-jewelry-companies-1%2F12-26-ps-1765139%2F&psig=AOvVaw3DkkT-hwi7uZVDjtzP3Ofl&ust=1733394897868000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKDl8av1jYoDFQAAAAAdAAAAABAJ",
-      ],
-      video: "/api/placeholder/800/800",
-    },
-    certificateno: "3513413",
-    shape: "Pear",
-    carat: "2.27",
-    color: "J",
-    clarity: "VS2",
-    price: "20380",
-    pricePerCarat: "8977",
-    rapPercentage: "-32.5",
-    cut: "VG",
-    polish: "PR",
-    symmetry: "EX",
-    fluorescence: "STG",
-    lab: "HRD",
-    table: "55.3",
-    depth: "61.0",
-    crown: "14.9",
-    pavilion: "43.7",
-    length: "8.49",
-    width: "8.39",
-    height: "5.05",
-    ratio: "1.01",
-    measurements: "8.49 x 8.39 x 5.05",
-    diamondType: "Natural",
-    keyToSymbols: "None",
-    reportComment: "No comments",
-    culet: "None",
-    girdle: "Medium to Slightly Thick",
-    starLength: "50%",
-    inclusions: "VS2 - Small Crystal",
-    shade: "None",
-    brand: "Generic",
-    reportShape: "Pear Brilliant",
-    reportDate: "2024-01-15",
-    treatment: "None",
-    inscription: "HRD 3513413",
+  const navigate = useNavigate();
+  const { number } = useParams();
+  const [DiamondDetail, setDiamondDetail] = useState({
+    isloading: true,
+    success: {},
+    error: null,
+  });
+  const user = useSelector((state) => state.user);
+
+  console.log(number);
+
+  const fetchDiamondDetail = async () => {
+    setDiamondDetail({ ...DiamondDetail, isloading: true });
+    let data = JSON.stringify({
+      stone_no: number,
+    });
+
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/SingleStock`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+
+    axios
+      .request(config)
+      .then((response) => {
+        setDiamondDetail({
+          ...DiamondDetail,
+          isloading: false,
+          success: response.data.UserData,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        setDiamondDetail({ ...DiamondDetail, isloading: false, error: error });
+      });
   };
+
+  const fetchCartItems = async () => {
+    try {
+      const config = {
+        method: "get",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.request(config);
+      if (response.data.cartItems) {
+        setCartArray(response.data.cartItems);
+        setIsInCart(
+          response.data.cartItems.some((item) => item.stone_no === number)
+        );
+      } else {
+        setCartArray([]);
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+      setCartArray([]);
+
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const addToCart = async () => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "post",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds: number },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+
+      if (response.data && response.data.message) {
+        fetchCartItems();
+
+        toast.success(
+          `Diamond with stone no: ${number} added to cart successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to add products to cart");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const removeFromCart = async () => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "delete",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds: number },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+
+      if (response.data && response.data.message) {
+        fetchCartItems();
+
+        toast.success(
+          `Diamond with stone no: ${number} removed from cart successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to remove products from cart");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const fetchWishlistItems = async () => {
+    try {
+      const config = {
+        method: "get",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.request(config);
+
+      if (response.data.wishlistItems) {
+        setWishlistArray(response.data.wishlistItems);
+        console.log(response.data.wishlistItems);
+        setIsInWishlist(
+          response.data.wishlistItems.some((item) => item.stone_no === number)
+        );
+      } else {
+        setWishlistArray([]);
+      }
+    } catch (error) {
+      setWishlistArray([]);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const addToWishlist = async () => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "post",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds: number },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+      if (response.data && response.data.message) {
+        fetchWishlistItems();
+
+        toast.success(
+          `Diamond with stone no: ${number} added to wishlist successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to add products to wishlist");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const removeFromWishlist = async () => {
+    const toastId = toast.loading("Adding to cart...", {
+      position: "top-right",
+    });
+    try {
+      const config = {
+        method: "delete",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        data: { productIds: number },
+      };
+
+      const response = await axios.request(config);
+      toast.dismiss(toastId);
+      if (response.data && response.data.message) {
+        fetchWishlistItems();
+        toast.success(
+          `Diamond with stone no: ${number} removed from wishlist successfully`,
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        throw new Error("Failed to remove products from wishlist");
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchDiamondDetail();
+    fetchCartItems();
+    fetchWishlistItems();
+  }, []);
+
+  console.log("DiamondDetail", DiamondDetail);
 
   const getGradeColor = (grade) => {
     switch (grade) {
@@ -97,55 +340,23 @@ export default function DiamondDetails() {
 
   const formatNumber = (num) => Number(num).toLocaleString("en-US");
 
-  const toastConfig = {
-    position: "bottom-right",
-    autoClose: 1000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
+  const handleWishlistToggle = () => {
+    const exists = wishlistArray.some(
+      (item) => item.stone_no === DiamondDetail?.success[0]?.stone_no
+    );
+
+    exists ? removeFromWishlist() : addToWishlist();
   };
 
-  const addtowishlist = () => {
-    if (isInWishlist) {
-      toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-        pending: "Removing from wishlist...",
-        success: `Removed diamond number ${diamond.stoneno} from wishlist`,
-        error: "Failed to remove from wishlist",
-        ...toastConfig,
-      });
-      setIsInWishlist(false);
-    } else {
-      toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-        pending: "Adding to wishlist...",
-        success: `Added diamond number ${diamond.stoneno} to wishlist`,
-        error: "Failed to add to wishlist",
-        ...toastConfig,
-      });
-      setIsInWishlist(true);
-    }
+  const handleCartToggle = () => {
+    // Check if stone exists in wishlistArray
+    const exists = cartArray.some(
+      (item) => item.stone_no === DiamondDetail?.success[0]?.stone_no
+    );
+    exists ? removeFromCart() : addToCart();
   };
 
-  const addtocart = () => {
-    if (isInCart) {
-      toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-        pending: "Removing from cart...",
-        success: `Removed diamond number ${diamond.stoneno} from cart`,
-        error: "Failed to remove from cart",
-        ...toastConfig,
-      });
-      setIsInCart(false);
-    } else {
-      toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-        pending: "Adding to cart...",
-        success: `Added diamond number ${diamond.stoneno} to cart`,
-        error: "Failed to add to cart",
-        ...toastConfig,
-      });
-      setIsInCart(true);
-    }
-  };
+  console.log(isInCart, isInWishlist);
 
   return (
     <div className="flex w-full h-screen">
@@ -191,95 +402,67 @@ export default function DiamondDetails() {
             <div className="space-y-2">
               {/* Main Image/Video */}
               <div className="relative w-full max-w-md mx-auto aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                {showVideo ? (
-                  <video
-                    src={diamond.media.video}
-                    controls
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <>
-                    <img
-                      src={diamond.media.photo[activeImageIndex]}
-                      alt={`Diamond view ${activeImageIndex + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = photoplaceholder;
-                      }}
-                    />
-                    <button
-                      onClick={() =>
-                        setActiveImageIndex((prev) =>
-                          prev === 0 ? diamond.media.photo.length - 1 : prev - 1
-                        )
-                      }
-                      className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-white/80 rounded-full shadow-lg hover:bg-white"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setActiveImageIndex((prev) =>
-                          prev === diamond.media.photo.length - 1 ? 0 : prev + 1
-                        )
-                      }
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-white/80 rounded-full shadow-lg hover:bg-white"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
+                <img
+                  src={
+                    DiamondDetail?.success[0]?.PhotoLink
+                      ? DiamondDetail?.success[0]?.PhotoLink
+                      : photoplaceholder
+                  }
+                  alt={`Diamond view`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = DiamondDetail?.success[0]?.PhotoLink;
+                  }}
+                />
               </div>
 
               {/* Thumbnails */}
               <div className="flex justify-center gap-2">
-                {diamond?.media?.photo?.map((photo, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setShowVideo(false);
-                      setActiveImageIndex(index);
-                    }}
-                    className={`relative h-12 w-12 rounded-lg overflow-hidden ${
-                      !showVideo && activeImageIndex === index
-                        ? "ring-2 ring-theme-500"
-                        : ""
-                    }`}
-                  >
-                    <img
-                      src={photo}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.target.src = photoplaceholder;
-                      }}
-                    />
-                  </button>
-                ))}
                 <button
-                  onClick={() => setShowVideo(true)}
-                  className={`relative h-12 w-12 rounded-lg overflow-hidden ${
-                    showVideo ? "ring-2 ring-theme-500" : ""
-                  }`}
+                  className={`relative h-12 w-12 rounded-lg overflow-hidden`}
                 >
                   <img
-                    src={diamond.media.video}
+                    src={
+                      DiamondDetail?.success[0]?.PhotoLink
+                        ? DiamondDetail?.success[0]?.PhotoLink
+                        : photoplaceholder
+                    }
+                    alt={`Thumbnail`}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.target.src = DiamondDetail?.success[0]?.PhotoLink;
+                    }}
+                  />
+                </button>
+
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={DiamondDetail?.success[0]?.VedioLink}
+                  className={`relative h-12 w-12 rounded-lg overflow-hidden`}
+                >
+                  <img
+                    src={
+                      DiamondDetail?.success[0]?.PhotoLink
+                        ? DiamondDetail?.success[0]?.PhotoLink
+                        : photoplaceholder
+                    }
                     alt="Video thumbnail"
                     className="h-full w-full object-cover"
                     onError={(e) => {
-                      e.target.src = photoplaceholder;
+                      e.target.src = DiamondDetail?.success[0]?.PhotoLink;
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <Play className="w-4 h-4 text-white" />
                   </div>
-                </button>
+                </a>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-2 max-w-md mx-auto">
                 <button
-                  onClick={addtocart}
+                  onClick={() => handleCartToggle()}
                   className={`flex-1 flex items-center justify-center gap-1 py-1.5 border rounded-lg text-sm transition-all duration-200 ${
                     isInCart
                       ? "bg-theme-600 text-white hover:bg-theme-700 border-theme-600"
@@ -292,7 +475,7 @@ export default function DiamondDetails() {
                   <span>{isInCart ? "Remove from Cart" : "Add to Cart"}</span>
                 </button>
                 <button
-                  onClick={addtowishlist}
+                  onClick={() => handleWishlistToggle()}
                   className={`flex-1 flex items-center justify-center gap-1 py-1.5 border rounded-lg text-sm transition-all duration-200 ${
                     isInWishlist
                       ? "bg-yellow-600 text-white hover:bg-yellow-700 border-yellow-600"
@@ -317,19 +500,20 @@ export default function DiamondDetails() {
                 <div className="flex justify-between items-baseline">
                   <div>
                     <h1 className="text-xl font-semibold text-theme-800">
-                      {diamond.shape} Diamond {diamond.carat} ct
+                      {DiamondDetail?.success[0]?.Shape} Diamond{" "}
+                      {DiamondDetail?.success[0]?.Carats} ct
                     </h1>
                     <p className="text-theme-600">
-                      Stone No: {diamond.stoneno}
+                      Stone No: {DiamondDetail?.success[0]?.stone_no}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-semibold text-theme-700">
-                      ${formatNumber(diamond.price)}
+                      ${formatNumber(DiamondDetail?.success[0]?.LiveAmount)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      ${formatNumber(diamond.pricePerCarat)}/ct | RAP{" "}
-                      {diamond.rapPercentage}%
+                      ${formatNumber(DiamondDetail?.success[0]?.LiveRate)}
+                      /ct | RAP {DiamondDetail?.success[0]?.liveraparate}
                     </p>
                   </div>
                 </div>
@@ -340,54 +524,123 @@ export default function DiamondDetails() {
                 <div>
                   {/* Two-column grid for regular details */}
                   <div className="grid grid-cols-2">
-                    <Detail label="Shape" value={diamond.shape} />
-                    <Detail label="Culet" value={diamond.culet} />
-                    <Detail label="Size" value={`${diamond.carat} ct`} />
-                    <Detail label="Girdle" value={diamond.girdle} />
-                    <Detail label="Color" value={diamond.color} />
-                    <Detail label="Crown" value={`${diamond.crown}°`} />
-                    <Detail label="Clarity" value={diamond.clarity} />
-                    <Detail label="Pavilion" value={`${diamond.pavilion}°`} />
-                    <Detail label="Cut" value={diamond.cut} grade={true} />
-                    <Detail label="Treatment" value={diamond.treatment} />
+                    <Detail
+                      label="Shape"
+                      value={DiamondDetail?.success[0]?.Shape}
+                    />
+                    <Detail
+                      label="Culet"
+                      value={DiamondDetail?.success[0]?.CuletSize}
+                    />
+                    <Detail
+                      label="Size"
+                      value={`${DiamondDetail?.success[0]?.Carats} ct`}
+                    />
+                    <Detail
+                      label="Girdle"
+                      value={DiamondDetail?.success[0]?.GirdlePer}
+                    />
+                    <Detail
+                      label="Color"
+                      value={DiamondDetail?.success[0]?.Color}
+                    />
+                    <Detail
+                      label="Crown"
+                      value={`${DiamondDetail?.success[0]?.CrownAngle}°`}
+                    />
+                    <Detail
+                      label="Clarity"
+                      value={DiamondDetail?.success[0]?.Clarity}
+                    />
+                    <Detail
+                      label="Pavilion"
+                      value={`${DiamondDetail?.success[0]?.PavillionAngle}°`}
+                    />
+                    <Detail
+                      label="Cut"
+                      value={DiamondDetail?.success[0]?.Cut}
+                      grade={true}
+                    />
+                    <Detail
+                      label="Treatment"
+                      value={DiamondDetail?.success[0]?.Treatment}
+                    />
                     <Detail
                       label="Polish"
-                      value={diamond.polish}
+                      value={DiamondDetail?.success[0]?.Polish}
                       grade={true}
                     />
-                    <Detail label="Inscription" value={diamond.inscription} />
+                    <Detail
+                      label="Inscription"
+                      value={DiamondDetail?.success[0]?.Inscription}
+                    />
                     <Detail
                       label="Symmetry"
-                      value={diamond.symmetry}
+                      value={DiamondDetail?.success[0]?.Symm}
                       grade={true}
                     />
-                    <Detail label="Ratio" value={diamond.ratio} />
-                    <Detail label="Fluorescence" value={diamond.fluorescence} />
-                    <Detail label="Star Length" value={diamond.starLength} />
-                    <Detail label="Depth %" value={diamond.depth} />
-                    <Detail label="Inclusions" value={diamond.inclusions} />
-                    <Detail label="Table %" value={diamond.table} />
-                    <Detail label="Shade" value={diamond.shade} />
-                    <Detail label="Measurements" value={diamond.measurements} />
-                    <Detail label="Brand" value={diamond.brand} />
-                    <Detail label="Diamond Type" value={diamond.diamondType} />
-                    <Detail label="Report Shape" value={diamond.reportShape} />
-                    <Detail label="Report Date" value={diamond.reportDate} />
+                    <Detail
+                      label="Ratio"
+                      value={DiamondDetail?.success[0]?.Ratio}
+                    />
+                    <Detail
+                      label="Fluorescence"
+                      value={DiamondDetail?.success[0]?.FLR}
+                    />
+                    <Detail
+                      label="Star Length"
+                      value={DiamondDetail?.success[0]?.StrLn}
+                    />
+                    <Detail
+                      label="Depth %"
+                      value={DiamondDetail?.success[0]?.DepthPer}
+                    />
+                    <Detail
+                      label="Inclusions"
+                      value={DiamondDetail?.success[0]?.inclusions}
+                    />
+                    <Detail
+                      label="Table %"
+                      value={DiamondDetail?.success[0]?.TableSize}
+                    />
+                    <Detail
+                      label="Shade"
+                      value={DiamondDetail?.success[0]?.Shade}
+                    />
+                    <Detail
+                      label="Measurements"
+                      value={DiamondDetail?.success[0]?.measurement}
+                    />
+                    <Detail
+                      label="Brand"
+                      value={DiamondDetail?.success[0]?.brand}
+                    />
+                    <Detail
+                      label="Diamond Type"
+                      value={DiamondDetail?.success[0]?.diamondType}
+                    />
+                    <Detail
+                      label="Report Date"
+                      value={DiamondDetail?.success[0]?.ReportDate}
+                    />
                   </div>
 
                   <Detail
                     label="Key to Symbols"
-                    value={diamond.keyToSymbols}
+                    value={DiamondDetail?.success[0]?.KeytoSymbols}
                     fullWidth={true}
                   />
                   <Detail
                     label="Supplier Comment"
-                    value={diamond.supplierComment || "No supplier comments"}
+                    value={
+                      DiamondDetail?.success[0]?.MemberComment ||
+                      "No supplier comments"
+                    }
                     fullWidth={true}
                   />
                   <Detail
                     label="Report Comment"
-                    value={diamond.reportComment}
+                    value={DiamondDetail?.success[0]?.ReportComments}
                     fullWidth={true}
                   />
                 </div>
@@ -395,13 +648,10 @@ export default function DiamondDetails() {
 
               {/* Bottom Actions */}
               <div className="flex gap-2 mt-4">
-                <button className="flex-1 py-1.5 bg-theme-600 text-white rounded-lg hover:bg-theme-700 text-sm font-medium">
-                  Inquire Now
-                </button>
                 <a
                   target="_blank"
                   rel="noreferrer"
-                  href="https://www.gia.edu/report-check?reportno=2256789"
+                  href={DiamondDetail?.success[0]?.CertificateLink}
                   className="flex items-center justify-center gap-1 px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-sm"
                 >
                   <FileText className="w-4 h-4" />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import diamond from "../../assets/round.png";
@@ -16,6 +16,9 @@ import fav from "../../assets/Sidebar icons/Fav.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
+import axios from "axios";
+import { use } from "react";
+import { useSelector } from "react-redux";
 
 export default function Cart() {
   const clarityOrder = [
@@ -66,7 +69,7 @@ export default function Cart() {
   // Assuming we'll get cart data from an API/state management
   // const cart = [];
   const { cart } = []; // Destructure stones array from JSON
-  const [cartItems, setCartItems] = useState(cart?.cart); // Replace with actual cart data
+  const [cartItems, setCartItems] = useState([]); // Replace with actual cart data
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -75,6 +78,7 @@ export default function Cart() {
     direction: "asc",
   });
   const [favToggled, setFavToggled] = useState({});
+  const user = useSelector((state) => state.user);
 
   // Pagination calculations
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -85,6 +89,41 @@ export default function Cart() {
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+
+  const fetchCartItems = async () => {
+    try {
+      const config = {
+        method: "get",
+        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.request(config);
+
+      if (response.data.cartItems) {
+        setCartItems(response.data?.cartItems);
+      } else {
+        setCartItems([]);
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+      setCartItems([]);
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
 
   const customSort = (data, column, direction) => {
     const sortedData = [...data];
@@ -263,7 +302,6 @@ export default function Cart() {
       error: "Failed to add to wishlist",
       ...toastConfig,
     });
-
   };
 
   // Remove from cart operation

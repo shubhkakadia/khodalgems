@@ -102,8 +102,6 @@ export default function Stones() {
 
   const fetchCartItems = async () => {
     try {
-      dispatch(setLoading(true));
-
       const config = {
         method: "get",
         url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
@@ -131,8 +129,6 @@ export default function Stones() {
         position: "bottom-right",
         autoClose: 3000,
       });
-    } finally {
-      dispatch(setLoading(false));
     }
   };
 
@@ -226,7 +222,6 @@ export default function Stones() {
     }
   };
 
-  // Wishlist Functions
   const fetchWishlistItems = async () => {
     try {
       const config = {
@@ -243,8 +238,10 @@ export default function Stones() {
       if (response.data && response.data.wishlistItems) {
         setWishlistArray(response.data.wishlistItems);
       } else {
+        setWishlistArray([]);
       }
     } catch (error) {
+      setWishlistArray([]);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -1119,7 +1116,7 @@ export default function Stones() {
                               </td>
                               <td className="text-sm border border-gray-300 px-2 text-right underline">
                                 <Link
-                                  target="_blank"
+                                  // target="_blank"
                                   to={`/stonedetails/${stone.stone_no}`}
                                   className="text-theme-600 hover:underline"
                                 >

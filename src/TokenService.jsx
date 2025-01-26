@@ -10,6 +10,9 @@ export const TokenService = {
   getToken: () => {
     return localStorage.getItem('authToken');
   },
+  removeToken: () => {
+    return localStorage.removeItem('authToken');
+  },
 
 
   // Verify token with server

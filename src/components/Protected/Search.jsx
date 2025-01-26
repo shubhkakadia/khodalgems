@@ -359,6 +359,7 @@ export default function Search() {
   };
 
   useEffect(() => {
+    console.log(getSelectionsJson());
     getSelectionsJson(); // Log selections on every change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -386,23 +387,23 @@ export default function Search() {
 
       // Prepare the request data
       const defaultParams = {
-        Shape: "",
-        Color: "",
-        Intensity: "",
-        Overtone: "",
-        FancyColor: "",
-        Clarity: "",
+        Shape: selectedShapes,
+        Color: selectedColors,
+        Intensity: selectedIntensity,
+        Overtone: selectedOvertone,
+        FancyColor: selectedFancyColor,
+        Clarity: selectedClarity,
         FromToCtsSize: "",
-        FromCts: 0,
-        ToCts: 0,
-        Cut: "",
-        Polish: "",
-        Symmetry: "",
-        Flr: "",
-        HandA: "",
-        EyeClean: "",
-        Lab: "",
-        Location: "",
+        FromCts: rangeFrom,
+        ToCts: rangeTo,
+        Cut: selectedCut,
+        Polish: selectedPolish,
+        Symmetry: selectedSymmetry,
+        Flr: selectedFluorescence,
+        HandA: selectedHnA,
+        EyeClean: selectedEyeClean,
+        Lab: selectedLab,
+        Location: selectedLocation,
       };
 
       const config = {
@@ -447,18 +448,41 @@ export default function Search() {
 
   useEffect(() => {
     // Call the fetch function
-    fetchStock()
-  }, []);
+    fetchStock();
+  }, [
+    selectedShapes,
+    selectedColors,
+    selectedClarity,
+    selectedCut,
+    selectedPolish,
+    selectedSymmetry,
+    selectedFluorescence,
+    selectedLab,
+    selectedHnA,
+    selectedLocation,
+    selectedcaratwt,
+    selectedEyeClean,
+    selectedIntensity,
+    selectedOvertone,
+    selectedFancyColor,
+  ]);
 
   // Toggle selection with logging
-  const toggleSelection = (selectionList, setSelectionList, value) => {
-    // setSelectionList([...selectionList, value]);
-    setSelectionList((prev) =>
-      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]
-    );
-    // getSelectionsJson(); // Log selections on every change
+  const toggleSelection = (setSelectionList, value) => {
+    setSelectionList((prev) => {
+      // Ensure `prev` is a string and split it into an array
+      const currentArray = prev?.length ? prev.split(", ").filter(Boolean) : [];
+  
+      // Toggle the value in the array
+      const updatedArray = currentArray.includes(value)
+        ? currentArray.filter((item) => item !== value)
+        : [...currentArray, value];
+  
+      // Convert the updated array back to a string
+      return updatedArray.join(", ");
+    });
   };
-
+  
   // Reset all selections
   const resetSelections = () => {
     setSelectedShapes([]);
@@ -570,7 +594,6 @@ export default function Search() {
                   key={shape.label}
                   onClick={() =>
                     toggleSelection(
-                      selectedShapes,
                       setSelectedShapes,
                       shape.label
                     )
@@ -612,7 +635,7 @@ export default function Search() {
                 <div
                   key={color}
                   onClick={() =>
-                    toggleSelection(selectedColors, setSelectedColors, color)
+                    toggleSelection(setSelectedColors, color)
                   }
                   className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
                     selectedColors.includes(color)
@@ -666,7 +689,6 @@ export default function Search() {
                   key={clarity}
                   onClick={() =>
                     toggleSelection(
-                      selectedClarity,
                       setSelectedClarity,
                       clarity
                     )
@@ -693,7 +715,6 @@ export default function Search() {
                     key={caratwt}
                     onClick={() =>
                       toggleSelection(
-                        selectedcaratwt,
                         setSelectedcaratwt,
                         caratwt
                       )
@@ -755,7 +776,7 @@ export default function Search() {
                   <div
                     key={cut}
                     onClick={() =>
-                      toggleSelection(selectedCut, setSelectedCut, cut)
+                      toggleSelection(setSelectedCut, cut)
                     }
                     className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
                       selectedCut.includes(cut)
@@ -776,7 +797,7 @@ export default function Search() {
                   <div
                     key={polish}
                     onClick={() =>
-                      toggleSelection(selectedPolish, setSelectedPolish, polish)
+                      toggleSelection(setSelectedPolish, polish)
                     }
                     className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
                       selectedPolish.includes(polish)
@@ -799,7 +820,6 @@ export default function Search() {
                     key={symmetry}
                     onClick={() =>
                       toggleSelection(
-                        selectedSymmetry,
                         setSelectedSymmetry,
                         symmetry
                       )
@@ -828,7 +848,6 @@ export default function Search() {
                     key={fluoresence}
                     onClick={() =>
                       toggleSelection(
-                        selectedFluorescence,
                         setSelectedFluorescence,
                         fluoresence
                       )
@@ -853,7 +872,7 @@ export default function Search() {
                   <div
                     key={HnA}
                     onClick={() =>
-                      toggleSelection(selectedHnA, setSelectedHnA, HnA)
+                      toggleSelection(setSelectedHnA, HnA)
                     }
                     className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
                       selectedHnA.includes(HnA)
@@ -900,7 +919,7 @@ export default function Search() {
                   <div
                     key={lab}
                     onClick={() =>
-                      toggleSelection(selectedLab, setSelectedLab, lab)
+                      toggleSelection(setSelectedLab, lab)
                     }
                     className={`cursor-pointer shadow-lg w-auto p-4 h-8 flex items-center justify-center rounded hover:bg-theme-600 hover:text-white ${
                       selectedLab.includes(lab)
@@ -923,7 +942,6 @@ export default function Search() {
                     key={location}
                     onClick={() =>
                       toggleSelection(
-                        selectedLocation,
                         setSelectedLocation,
                         location
                       )
