@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import Sidebar from "./Sidebar";
 import diamond from "../../assets/round.png";
-import { ChevronLeft, ChevronRight, Phone, Sheet, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, Sheet } from "lucide-react";
 import { TiStarFullOutline, TiStarOutline } from "react-icons/ti";
 import { IoCartOutline, IoCartSharp } from "react-icons/io5";
 import { toast } from "react-toastify";
@@ -12,24 +12,26 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setSuccess, setError } from "../state/stockAPI.js";
 import axios from "axios";
 import Loader from "./Loader";
+import { addToCart } from "../state/addToCart.js";
+import { addToWishlist } from "../state/addToWishlist.js";
+import { removeFromWishlist } from "../state/removeFromWishlist.js";
+import { removeFromCart } from "../state/removeFromCart.js";
 
 export default function Stones() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [selected, setSelected] = useState([]);
-  const [favToggled, setFavToggled] = useState({});
-  const [cartToggled, setCartToggled] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(100);
   const [tableHeight, setTableHeight] = useState(500);
-  const [cartArray, setCartArray] = useState([]);
-  const [wishlistArray, setWishlistArray] = useState([]);
   const [sortConfig, setSortConfig] = useState({
     column: null,
     direction: "asc",
   });
   const stock = useSelector((state) => state.stock);
   const user = useSelector((state) => state.user);
+  const cart = useSelector((state) => state.cart);
+  const wishlist = useSelector((state) => state.wishlist);
 
   const clarityOrder = [
     "FL",
@@ -100,247 +102,6 @@ export default function Stones() {
     };
   }, []);
 
-  const fetchCartItems = async () => {
-    try {
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data && response.data.cartItems) {
-        setCartArray(response.data.cartItems);
-      } else {
-        setCartArray([]);
-      }
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-      setCartArray([]);
-
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const addToCart = async (productIds) => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "post",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-
-      if (response.data && response.data.message) {
-        fetchCartItems();
-
-        toast.success(
-          `Diamond with stone no: ${productIds} added to cart successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to add products to cart");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const removeFromCart = async (productIds) => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "delete",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-
-      if (response.data && response.data.message) {
-        fetchCartItems();
-
-        toast.success(
-          `Diamond with stone no: ${productIds} removed from cart successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to remove products from cart");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const fetchWishlistItems = async () => {
-    try {
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data && response.data.wishlistItems) {
-        setWishlistArray(response.data.wishlistItems);
-      } else {
-        setWishlistArray([]);
-      }
-    } catch (error) {
-      setWishlistArray([]);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const addToWishlist = async (productIds) => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "post",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-      if (response.data && response.data.message) {
-        fetchWishlistItems();
-
-        toast.success(
-          `Diamond with stone no: ${productIds} added to wishlist successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to add products to wishlist");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const removeFromWishlist = async (productIds) => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "delete",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-      if (response.data && response.data.message) {
-        fetchWishlistItems();
-        toast.success(
-          `Diamond with stone no: ${productIds} removed from wishlist successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to remove products from wishlist");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
   const fetchStock = async () => {
     try {
       // Set loading state when the API call starts
@@ -408,8 +169,6 @@ export default function Stones() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchCartItems();
-      await fetchWishlistItems();
       await fetchStock();
     };
 
@@ -715,7 +474,7 @@ export default function Stones() {
       return;
     }
 
-    await addToWishlist(selected.map((stone) => stone.stone_no).join(", "));
+    await addToWishlist(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
     setSelected([]);
   };
 
@@ -724,22 +483,22 @@ export default function Stones() {
       toast.error("Please select stones to add to cart", toastConfig);
       return;
     }
-    await addToCart(selected.map((stone) => stone.stone_no).join(", "));
+    await addToCart(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
     // setSelected([]);
   };
 
   const handleWishlistToggle = (stoneNo) => {
     // Check if stone exists in wishlistArray
-    const exists = wishlistArray.some((item) => item.stone_no === stoneNo);
+    const exists = wishlist.success.some((item) => item.stone_no === stoneNo);
 
-    exists ? removeFromWishlist(stoneNo) : addToWishlist(stoneNo);
+    exists ? removeFromWishlist(dispatch, user, stoneNo) : addToWishlist(dispatch, user, stoneNo);
   };
 
   const handleCartToggle = (stoneNo) => {
     // Check if stone exists in wishlistArray
-    const exists = cartArray.some((item) => item.stone_no === stoneNo);
+    const exists = cart.success.some((item) => item.stone_no === stoneNo);
 
-    exists ? removeFromCart(stoneNo) : addToCart(stoneNo);
+    exists ? removeFromCart(dispatch, user, stoneNo) : addToCart(dispatch, user, stoneNo);
   };
 
   const sortedData = usePaginatedAndSortedData(
@@ -859,7 +618,7 @@ export default function Stones() {
 
         <div className="flex-1">
           {/* Table */}
-          {stock.loding ? (
+          {stock.loading ? (
             <div>
               <Loader />
             </div>
@@ -1089,7 +848,7 @@ export default function Stones() {
                                       handleWishlistToggle(stone.stone_no)
                                     }
                                   >
-                                    {wishlistArray.some(
+                                    {wishlist.success.some(
                                       (item) => item.stone_no === stone.stone_no
                                     ) ? (
                                       <TiStarFullOutline size={20} />
@@ -1104,7 +863,7 @@ export default function Stones() {
                                       handleCartToggle(stone.stone_no)
                                     }
                                   >
-                                    {cartArray.some(
+                                    {cart.success.some(
                                       (item) => item.stone_no === stone.stone_no
                                     ) ? (
                                       <IoCartSharp size={20} />

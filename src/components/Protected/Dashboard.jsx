@@ -15,79 +15,17 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setSuccess, setError } from "../state/stockAPI.js";
+import { FetchCartItems } from "../state/cartAPI.js";
+import { FetchWishlistItems } from "../state/wishlistAPI.js";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [activeView, setActiveView] = useState("orders");
   const dispatch = useDispatch();
   const stock = useSelector((state) => state.stock);
   const user = useSelector((state) => state.user);
-
-  const fetchCartItems = async () => {
-    try {
-
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data.cartItems) {
-        setCartCount(response.data?.cartItems?.length);
-      } else {
-        setCartCount(0);
-      }
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-      setCartCount(0);
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const fetchWishlistItems = async () => {
-    try {
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data.wishlistItems) {
-        setWishlistCount(response.data?.wishlistItems?.length);
-      } else {
-        setWishlistCount(0);
-      }
-    } catch (error) {
-      setWishlistCount(0);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
-  };
+  const cart = useSelector((state) => state.cart);
+  const wishlist = useSelector((state) => state.wishlist);
 
   const fetchStock = async () => {
     try {
@@ -157,8 +95,8 @@ export default function Dashboard() {
   useEffect(() => {
     // Call the fetch function
     fetchStock();
-    fetchCartItems();
-    fetchWishlistItems();
+    FetchCartItems(dispatch, user);
+    FetchWishlistItems(dispatch, user);
   }, []);
 
   return (
@@ -215,7 +153,7 @@ export default function Dashboard() {
                       Cart Items
                     </p>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {cartCount}
+                      {cart.success?.length > 0 ? cart.success?.length : 0}
                     </h3>
                   </div>
                 </div>
@@ -267,7 +205,9 @@ export default function Dashboard() {
                       Wishlist
                     </p>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {wishlistCount}
+                      {wishlist.success?.length > 0
+                        ? wishlist.success?.length
+                        : 0}
                     </h3>
                   </div>
                 </div>

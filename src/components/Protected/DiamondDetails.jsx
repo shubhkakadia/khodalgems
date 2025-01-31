@@ -2,28 +2,35 @@ import React, { useEffect, useState } from "react";
 import { Play, Phone, ShoppingCart, Star, FileText } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import photoplaceholder from "../../assets/diamondImagePlaceholder.webp";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { FetchCartItems } from "../state/cartAPI";
+import { FetchWishlistItems } from "../state/wishlistAPI";
+import { addToCart } from "../state/addToCart";
+import { removeFromCart } from "../state/removeFromCart";
+import { removeFromWishlist } from "../state/removeFromWishlist";
+import { addToWishlist } from "../state/addToWishlist";
 
 export default function DiamondDetails() {
-  const [isInCart, setIsInCart] = useState(false);
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [wishlistArray, setWishlistArray] = useState([]);
-  const [cartArray, setCartArray] = useState([]);
-
-  const navigate = useNavigate();
-  const { number } = useParams();
+  const user = useSelector((state) => state.user);
+  const cart = useSelector((state) => state.cart);
+  const wishlist = useSelector((state) => state.wishlist);
   const [DiamondDetail, setDiamondDetail] = useState({
     isloading: true,
     success: {},
     error: null,
   });
-  const user = useSelector((state) => state.user);
-
-  console.log(number);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { number } = useParams();
+  const [isInCart, setIsInCart] = useState(
+    cart.success.some((item) => item.stone_no === number)
+  );
+  const [isInWishlist, setIsInWishlist] = useState(
+    wishlist.success.some((item) => item.stone_no === number)
+  );
 
   const fetchDiamondDetail = async () => {
     setDiamondDetail({ ...DiamondDetail, isloading: true });
@@ -56,257 +63,15 @@ export default function DiamondDetails() {
       });
   };
 
-  const fetchCartItems = async () => {
-    try {
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-      if (response.data.cartItems) {
-        setCartArray(response.data.cartItems);
-        setIsInCart(
-          response.data.cartItems.some((item) => item.stone_no === number)
-        );
-      } else {
-        setCartArray([]);
-      }
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-      setCartArray([]);
-
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const addToCart = async () => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "post",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds: number },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-
-      if (response.data && response.data.message) {
-        fetchCartItems();
-
-        toast.success(
-          `Diamond with stone no: ${number} added to cart successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to add products to cart");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const removeFromCart = async () => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "delete",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds: number },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-
-      if (response.data && response.data.message) {
-        fetchCartItems();
-
-        toast.success(
-          `Diamond with stone no: ${number} removed from cart successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to remove products from cart");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const fetchWishlistItems = async () => {
-    try {
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data.wishlistItems) {
-        setWishlistArray(response.data.wishlistItems);
-        console.log(response.data.wishlistItems);
-        setIsInWishlist(
-          response.data.wishlistItems.some((item) => item.stone_no === number)
-        );
-      } else {
-        setWishlistArray([]);
-      }
-    } catch (error) {
-      setWishlistArray([]);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const addToWishlist = async () => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "post",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds: number },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-      if (response.data && response.data.message) {
-        fetchWishlistItems();
-
-        toast.success(
-          `Diamond with stone no: ${number} added to wishlist successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to add products to wishlist");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-  const removeFromWishlist = async () => {
-    const toastId = toast.loading("Adding to cart...", {
-      position: "top-right",
-    });
-    try {
-      const config = {
-        method: "delete",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-        data: { productIds: number },
-      };
-
-      const response = await axios.request(config);
-      toast.dismiss(toastId);
-      if (response.data && response.data.message) {
-        fetchWishlistItems();
-        toast.success(
-          `Diamond with stone no: ${number} removed from wishlist successfully`,
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        throw new Error("Failed to remove products from wishlist");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
+  useEffect(() => {
+    setIsInWishlist(wishlist.success.some((item) => item.stone_no === number));
+    setIsInCart(cart.success.some((item) => item.stone_no === number));
+  }, [wishlist, cart, number]);
 
   useEffect(() => {
     fetchDiamondDetail();
-    fetchCartItems();
-    fetchWishlistItems();
+    FetchCartItems(dispatch, user);
+    FetchWishlistItems(dispatch, user);
   }, []);
 
   console.log("DiamondDetail", DiamondDetail);
@@ -341,19 +106,23 @@ export default function DiamondDetails() {
   const formatNumber = (num) => Number(num).toLocaleString("en-US");
 
   const handleWishlistToggle = () => {
-    const exists = wishlistArray.some(
+    const exists = wishlist.success.some(
       (item) => item.stone_no === DiamondDetail?.success[0]?.stone_no
     );
 
-    exists ? removeFromWishlist() : addToWishlist();
+    exists
+      ? removeFromWishlist(dispatch, user, number)
+      : addToWishlist(dispatch, user, number);
   };
 
   const handleCartToggle = () => {
     // Check if stone exists in wishlistArray
-    const exists = cartArray.some(
+    const exists = cart.success.some(
       (item) => item.stone_no === DiamondDetail?.success[0]?.stone_no
     );
-    exists ? removeFromCart() : addToCart();
+    exists
+      ? removeFromCart(dispatch, user, number)
+      : addToCart(dispatch, user, number);
   };
 
   console.log(isInCart, isInWishlist);

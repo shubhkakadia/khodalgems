@@ -12,7 +12,7 @@ const Loader = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prevImage) => (prevImage + 1) % 5);
-    }, 1000); // Change the interval duration as needed (in milliseconds)
+    }, 500); // Change the interval duration as needed (in milliseconds)
 
     return () => clearInterval(interval);
   }, []);
