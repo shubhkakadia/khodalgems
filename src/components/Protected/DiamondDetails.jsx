@@ -58,7 +58,6 @@ export default function DiamondDetails() {
         });
       })
       .catch((error) => {
-        console.log(error);
         setDiamondDetail({ ...DiamondDetail, isloading: false, error: error });
       });
   };
@@ -73,8 +72,6 @@ export default function DiamondDetails() {
     FetchCartItems(dispatch, user);
     FetchWishlistItems(dispatch, user);
   }, []);
-
-  console.log("DiamondDetail", DiamondDetail);
 
   const getGradeColor = (grade) => {
     switch (grade) {
@@ -124,8 +121,6 @@ export default function DiamondDetails() {
       ? removeFromCart(dispatch, user, number)
       : addToCart(dispatch, user, number);
   };
-
-  console.log(isInCart, isInWishlist);
 
   return (
     <div className="flex w-full h-screen">

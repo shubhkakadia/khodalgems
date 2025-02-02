@@ -1,18 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  Shapes: [],
-  Colors: [],
-  Clarity: [],
-  Cut: [],
-  Polish: [],
-  Symmetry: [],
-  Fluorescence: [],
-  Lab: [],
-  HeartsAndArrows: [],
-  Location: [],
-  CaratWt: [],
-  EyeClean: null,
+  Shape: "",
+  Color: "",
+  Clarity: "",
+  Cut: "",
+  Polish: "",
+  Symmetry: "",
+  Flr: "",
+  Lab: "",
+  HandA: "",
+  Location: "",
+  FromToCtsSize: "",
+  EyeClean: "",
+  Intensity: "",
+  Overtone: "",
+  FancyColor: "",
+  FromCts: 0,
+  ToCts: 0,
 };
 
 const searchSlice = createSlice({

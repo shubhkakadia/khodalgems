@@ -78,24 +78,43 @@ const Login = () => {
         // Save token to localStorage
         setToken(token);
 
-        // Show success toast
-        toast.success("Login Successful!", {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          // onClose: () => navigate('/dashboard')
-        });
-        console.log(response.data.user);
         if (response.data.user.admin === 1) {
+          toast.success("Login Successful!", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
           // Dispatch action to update Redux store
           dispatch(setUserSuccess(response.data.user));
           // dispatch(setAdminSuccess(response.data.user));
           // dispatch(setUserSuccess({}));
           navigate("/admin");
-        } else {
+        } 
+        else if (response.data.user.active === 0) {
+          toast.error(
+              "Your account is not active. Please contact us for more information.",
+            {
+              position: "top-right",
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              onClose: () => {navigate("/contact")},
+            }
+          );
+        }
+        else {
+          toast.success("Login Successful!", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
           // Dispatch action to update Redux store
           dispatch(setUserSuccess(response.data.user));
           // dispatch(setAdminSuccess({}));

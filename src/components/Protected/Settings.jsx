@@ -411,9 +411,7 @@ export default function Settings() {
   const validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
-
-  console.log("user", user);
-
+  
   return (
     <div className="flex w-full bg-main-bg">
       {isVerificationModalOpen && (

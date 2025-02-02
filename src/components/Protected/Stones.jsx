@@ -23,7 +23,7 @@ export default function Stones() {
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [tableHeight, setTableHeight] = useState(500);
+  const [tableHeight, setTableHeight] = useState(0);
   const [sortConfig, setSortConfig] = useState({
     column: null,
     direction: "asc",
@@ -32,6 +32,7 @@ export default function Stones() {
   const user = useSelector((state) => state.user);
   const cart = useSelector((state) => state.cart);
   const wishlist = useSelector((state) => state.wishlist);
+  const searchParams = useSelector((state) => state.search);
 
   const clarityOrder = [
     "FL",
@@ -85,9 +86,10 @@ export default function Stones() {
     rowsPerPage === "All" ? 1 : Math.ceil(stock.success?.length / rowsPerPage);
 
   useEffect(() => {
+
     // Function to log the screen height
     const logScreenHeight = () => {
-      setTableHeight(window.innerHeight * 0.8); // Example: 50% of screen height
+      setTableHeight(window.innerHeight - 150); // Example: 50% of screen height
     };
 
     // Log the initial screen height
@@ -101,6 +103,8 @@ export default function Stones() {
       window.removeEventListener("resize", logScreenHeight);
     };
   }, []);
+
+  console.log(JSON.stringify(tableHeight));
 
   const fetchStock = async () => {
     try {
@@ -133,7 +137,7 @@ export default function Stones() {
         maxBodyLength: Infinity,
         url: `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/StockWithPara`,
         headers: { "Content-Type": "application/json" },
-        data: defaultParams,
+        data: searchParams,
       };
 
       const response = await axios.request(config);
@@ -639,7 +643,8 @@ export default function Stones() {
               {sortedData.length > 0 ? (
                 <div>
                   <div
-                    className={`mx-4 h-[${500}px] overflow-x-auto overflow-y-auto transition-all duration-300 ease-in-out`}
+                    className={`mx-4 overflow-x-auto overflow-y-auto transition-all duration-300 ease-in-out`}
+                    style={{ height: `${tableHeight}px` }}
                   >
                     <table className="table-auto border-collapse border border-gray-300 w-full sortable">
                       <thead>

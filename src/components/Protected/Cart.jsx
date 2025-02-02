@@ -100,7 +100,7 @@ export default function Cart() {
 
     try {
       const responses = await Promise.all(requests);
-      return responses.map((res) => res.data.UserData[0]); // Extract relevant data
+      return responses.map((res) => res.data.UserData[0]);
     } catch (error) {
       console.error("Error fetching diamond details:", error);
       return [];
@@ -768,7 +768,7 @@ export default function Cart() {
                     </thead>
 
                     <tbody>
-                      {sortedData.map((stone, index) => {
+                      {sortedData?.map((stone, index) => {
                         const isSelected = selected.some(
                           (item) => item.stone_no === stone.stone_no
                         );
@@ -812,7 +812,6 @@ export default function Cart() {
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-right underline">
                               <Link
-                                // target="_blank"
                                 to={`/stonedetails/${stone.stone_no}`}
                                 className="text-theme-600 hover:underline"
                               >

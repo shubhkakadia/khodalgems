@@ -228,11 +228,11 @@ const Register = () => {
         toast.success(
           "Registration Successful! Our team will review your account and contact you shortly.",
           {
-            position: "top-center",
-            autoClose: false,
+            position: "top-right",
+            hideProgressBar: false,
             closeOnClick: true,
+            pauseOnHover: true,
             draggable: true,
-            closeButton: true,
             onClose: () => navigate("/login"),
           }
         );

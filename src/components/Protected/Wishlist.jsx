@@ -782,7 +782,6 @@ export default function Wishlist() {
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-right underline">
                               <Link
-                                // target="_blank"
                                 to={`/stonedetails/${stone.stone_no}`}
                                 className="text-theme-600 hover:underline"
                               >
