@@ -1,20 +1,20 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import diamond from "../../assets/round.png";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Phone,
-  Sheet,
-  ShoppingCart,
-  Trash2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, Sheet } from "lucide-react";
 // import wishlistData from "../Data/wishlist.json";
 
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
+import { FaStarHalf } from "react-icons/fa";
+import { removeFromCart } from "../state/removeFromCart";
+import { addToCart } from "../state/addToCart";
+import { useDispatch, useSelector } from "react-redux";
+import { IoCartOutline, IoCartSharp } from "react-icons/io5";
+import axios from "axios";
+import { removeFromWishlist } from "../state/removeFromWishlist";
 
 export default function Wishlist() {
   const clarityOrder = [
@@ -62,10 +62,8 @@ export default function Wishlist() {
   const eyeCleanOrder = ["Yes", "No"];
 
   const navigate = useNavigate();
-  // Assuming we'll get wishlist data from an API/state management
-  // const { wishlist } = []; // Destructure stones array from JSON
-  const { wishlist } = []; // Destructure stones array from JSON
-  const [wishlistItems, setWishlistItems] = useState(wishlist?.wishlist); // Replace with actual wishlist data
+  const [wishlist, setWishlist] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -73,16 +71,73 @@ export default function Wishlist() {
     column: null,
     direction: "asc",
   });
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+  const cart = useSelector((state) => state.cart);
 
-  // Pagination calculations
+  // Pagination
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = wishlistItems?.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows =
+    rowsPerPage === "All"
+      ? wishlistItems
+      : wishlistItems?.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages =
+    rowsPerPage === "All" ? 1 : Math.ceil(wishlistItems?.length / rowsPerPage);
 
   // Format number with commas
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+
+  const fetchDiamondDetails = async (wishlist) => {
+    if (!wishlist.length) return [];
+
+    const requests = wishlist.map((item) =>
+      axios.post(
+        `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/SingleStock`,
+        JSON.stringify({ stone_no: item.stone_no }),
+        { headers: { "Content-Type": "application/json" } }
+      )
+    );
+
+    try {
+      const responses = await Promise.all(requests);
+      return responses.map((res) => res.data.UserData[0]); // Extract relevant data
+    } catch (error) {
+      console.error("Error fetching diamond details:", error);
+      return [];
+    }
+  };
+
+  const fetchWishlistItems = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/wishlist`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setWishlist(response.data.wishlistItems || []);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      setWishlist([]);
+    }
+  }, [user.success.id]);
+
+  useEffect(() => {
+    fetchWishlistItems();
+  }, [fetchWishlistItems]);
+
+  useEffect(() => {
+    if (wishlist.length > 0) {
+      fetchDiamondDetails(wishlist).then(setWishlistItems);
+    }
+  }, [wishlist]);
 
   const customSort = (data, column, direction) => {
     const sortedData = [...data];
@@ -161,41 +216,69 @@ export default function Wishlist() {
     ? customSort(currentRows, sortConfig.column, sortConfig.direction)
     : currentRows;
 
-  const toggleCart = (stoneNo) => {
-    // call api to add selected stone to cart
-  };
-
   // Calculate totals
-  const totalPieces = selected?.length;
-  const totalCarat = selected
-    .reduce((sum, stone) => sum + parseFloat(stone.carat || 0), 0)
-    .toFixed(2);
-  const totalPrice = selected
-    .reduce((sum, stone) => sum + parseFloat(stone.price || 0), 0)
-    .toFixed(2);
-  const totalRap = selected
-    .reduce((sum, stone) => sum + parseFloat(stone.rap || 0), 0)
-    .toFixed(2);
-  // Calculate total discount amount
-  const totalDiscountAmount = selected
-    .reduce((sum, stone) => {
-      const price = parseFloat(stone.price || 0);
-      const discount = parseFloat(stone.disc || 0);
-      return sum + (price * discount) / 100;
-    }, 0)
-    .toFixed(2);
-  const totalDiscount =
-    totalPrice > 0
-      ? ((totalDiscountAmount / totalPrice) * 100).toFixed(2)
-      : "0.00";
+  const memoizedCalculations = useMemo(() => {
+    // Total Pieces
+    const totalPieces = selected.length;
 
-  // Handle checkbox selection
+    // Total Carat
+    const totalCarat = selected
+      .reduce((sum, stone) => sum + parseFloat(stone.Carats || 0), 0)
+      .toFixed(2);
+
+    // Total Price
+    const totalPrice = selected
+      .reduce((sum, stone) => sum + parseFloat(stone.LiveAmount || 0), 0)
+      .toFixed(2);
+
+    // Total Rap
+    const totalRap = selected
+      .reduce((sum, stone) => sum + parseFloat(stone.liveraparate || 0), 0)
+      .toFixed(2);
+
+    // Calculate total discount amount
+    const totalDiscountAmount = selected
+      .reduce((sum, stone) => {
+        const price = parseFloat(stone.LiveAmount || 0);
+        const discount = parseFloat(stone.LiveDiscount || 0);
+        return sum + (price * discount) / 100;
+      }, 0)
+      .toFixed(2);
+
+    // Calculate total discount percentage
+    const totalDiscount =
+      totalPrice > 0
+        ? ((totalDiscountAmount / parseFloat(totalPrice)) * 100).toFixed(2)
+        : "0.00";
+
+    return {
+      totalPieces,
+      totalCarat,
+      totalPrice,
+      totalRap,
+      totalDiscount,
+    };
+  }, [selected]);
+
+  const { totalPieces, totalCarat, totalPrice, totalRap, totalDiscount } =
+    memoizedCalculations;
+
   const handleSelection = (stone) => {
     setSelected((prev) => {
-      if (prev.find((item) => item.stoneno === stone.stoneno)) {
-        return prev.filter((item) => item.stoneno !== stone.stoneno);
+      // Check if the stone is already in the selected list
+      const isAlreadySelected = prev.some(
+        (selectedStone) => selectedStone.stone_no === stone.stone_no
+      );
+
+      if (isAlreadySelected) {
+        // If already selected, remove it
+        return prev.filter(
+          (selectedStone) => selectedStone.stone_no !== stone.stone_no
+        );
+      } else {
+        // If not selected, add it
+        return [...prev, stone];
       }
-      return [...prev, stone];
     });
   };
 
@@ -239,41 +322,6 @@ export default function Wishlist() {
     pauseOnHover: true,
     draggable: true,
     progress: undefined,
-  };
-
-  // Cart operations
-  const addtocart = () => {
-    if (selected?.length === 0) {
-      toast.error("Please select stones to add to cart", toastConfig);
-      return;
-    }
-
-    // Simulate API delay
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      pending: "Adding to cart...",
-      success: `Added ${selected?.length} stone${
-        selected?.length > 1 ? "s" : ""
-      } to cart`,
-      error: "Failed to add to cart",
-      ...toastConfig,
-    });
-  };
-
-  const removefromcart = () => {
-    if (selected?.length === 0) {
-      toast.error("Please select stones to remove", toastConfig);
-      return;
-    }
-
-    // Simulate API delay
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      pending: "Removing from cart...",
-      success: `Removed ${selected?.length} stone${
-        selected?.length > 1 ? "s" : ""
-      } from cart`,
-      error: "Failed to remove from cart",
-      ...toastConfig,
-    });
   };
 
   const exportToExcel = () => {
@@ -369,8 +417,40 @@ export default function Wishlist() {
     XLSX.writeFile(workbook, filename);
   };
 
+  const removefromwishlistfunction = async () => {
+    if (selected.length === 0) {
+          toast.error("Please select stones to add to wishlist", toastConfig);
+          return;
+        }
+    
+        await removeFromWishlist(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
+        setSelected([]);
+  };
+
+  const addtocartfunction = async () => {
+        if (selected.length === 0) {
+          toast.error("Please select stones to add to wishlist", toastConfig);
+          return;
+        }
+    
+        await addToCart(
+          dispatch,
+          user,
+          selected.map((stone) => stone.stone_no).join(", ")
+        );
+        setSelected([]);
+  };
+  const handleCartToggle = (stoneNo) => {
+    // Check if stone exists in wishlistArray
+    const exists = cart.success.some((item) => item.stone_no === stoneNo);
+
+    exists
+      ? removeFromCart(dispatch, user, stoneNo)
+      : addToCart(dispatch, user, stoneNo);
+  };
+
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full h-full bg-main-bg">
       <div className="flex-none md:w-20 w-14">
         <Sidebar />
       </div>
@@ -379,7 +459,82 @@ export default function Wishlist() {
         <div className="p-4 sticky top-0 bg-main-bg z-[5] flex md:justify-between md:items-center md:flex-row flex-col gap-2">
           <div>
             <h2 className="text-4xl font-semibold text-theme-600">Wishlist</h2>
+            <Link
+              to={"/search"}
+              className="text-md font-semibold pb-4 text-theme-600 underline "
+            >
+              back to search
+            </Link>
           </div>
+
+          {/* Totals */}
+          {selected.length > 0 && (
+            <div className="md:flex justify-center bg-main-bg gap-20">
+              <div className="flex overflow-auto md:flex-row flex-col md:py-0 py-2">
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-32">
+                    Total Pieces: {totalPieces}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[150px]">
+                    Total Carat: {totalCarat}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[200px]">
+                    Total Price: ${formatNumber(totalPrice)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[175px]">
+                    Total Rap: {formatNumber(totalRap)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[150px]">
+                    Discount: {totalDiscount}%
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex gap-4 justify-center items-center">
+                  {/* Add to Cart Button */}
+                  <div className="flex justify-center"></div>
+                  <div className="flex justify-center">
+                    <button
+                      title="Remove from Wishlist"
+                      onClick={removefromwishlistfunction}
+                      className="bg-red-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-red-600"
+                    >
+                      <FaStarHalf size={20} />
+                    </button>
+                  </div>
+                  {/* Add to Wishlist Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Add to Cart"
+                      onClick={addtocartfunction}
+                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                    >
+                      <IoCartOutline size={20} />
+                    </button>
+                  </div>
+                  {/* Export to Excel Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Export to Excel"
+                      onClick={exportToExcel}
+                      className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
+                    >
+                      <Sheet className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={() => navigate("/contactus")}
@@ -403,599 +558,500 @@ export default function Wishlist() {
           </button>
         </div>
 
-        {/* Table Section */}
-        {sortedData?.length > 0 ? (
-          <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
-            <table className="table-auto border-collapse border border-gray-300 w-full sortable">
-              <thead>
-                <tr className="bg-gray-100 sticky top-0 border border-gray-300 cursor-pointer">
-                  <th className="border border-gray-300 px-2 py-2 min-w-[100px] flex justify-around items-center">
-                    Select{" "}
-                    <input
-                      type="checkbox"
-                      checked={currentRows.every((stone) =>
-                        selected.some((item) => item.stoneno === stone.stoneno)
-                      )}
-                      onChange={toggleSelectAll}
-                      className="cursor-pointer"
-                    />
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2">Actions</th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("stoneno")}
-                  >
-                    Stone No{" "}
-                    {sortConfig.column === "stoneno" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 min-w-[125px]">
-                    Certificate No
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("shape")}
-                  >
-                    Shape{" "}
-                    {sortConfig.column === "shape" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
-                    onClick={() => handleSort("carat")}
-                  >
-                    Carat{" "}
-                    {sortConfig.column === "carat" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    onClick={() => handleSort("color")}
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                  >
-                    Color{" "}
-                    {sortConfig.column === "color" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    onClick={() => handleSort("clarity")}
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                  >
-                    Clarity{" "}
-                    {sortConfig.column === "clarity" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
-                    onClick={() => handleSort("price")}
-                  >
-                    Price{" "}
-                    {sortConfig.column === "price" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
-                    onClick={() => handleSort("rap")}
-                  >
-                    Rap{" "}
-                    {sortConfig.column === "rap" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("disc")}
-                  >
-                    Discount{" "}
-                    {sortConfig.column === "disc" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("pricepercarat")}
-                  >
-                    $/carat{" "}
-                    {sortConfig.column === "pricepercarat" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
-                    onClick={() => handleSort("cut")}
-                  >
-                    Cut{" "}
-                    {sortConfig.column === "cut" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
-                    onClick={() => handleSort("polish")}
-                  >
-                    Polish{" "}
-                    {sortConfig.column === "polish" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[125px]"
-                    onClick={() => handleSort("symmetry")}
-                  >
-                    Symmetry{" "}
-                    {sortConfig.column === "symmetry" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[130px]"
-                    onClick={() => handleSort("fluorescence")}
-                  >
-                    Fluorescence{" "}
-                    {sortConfig.column === "fluorescence" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
-                    onClick={() => handleSort("lab")}
-                  >
-                    Lab{" "}
-                    {sortConfig.column === "lab" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2">Comment</th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[150px]"
-                    onClick={() => handleSort("eye")}
-                  >
-                    Eye clean{" "}
-                    {sortConfig.column === "eye" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("table")}
-                  >
-                    Table%{" "}
-                    {sortConfig.column === "table" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[100px]"
-                    onClick={() => handleSort("depth")}
-                  >
-                    Depth%{" "}
-                    {sortConfig.column === "depth" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[100px]"
-                    onClick={() => handleSort("crown")}
-                  >
-                    Crown%{" "}
-                    {sortConfig.column === "crown" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[120px]"
-                    onClick={() => handleSort("pavilion")}
-                  >
-                    Pavilion%{" "}
-                    {sortConfig.column === "pavilion" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[100px]"
-                    onClick={() => handleSort("length")}
-                  >
-                    Length{" "}
-                    {sortConfig.column === "length" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[100px]"
-                    onClick={() => handleSort("width")}
-                  >
-                    Width{" "}
-                    {sortConfig.column === "width" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[100px]"
-                    onClick={() => handleSort("height")}
-                  >
-                    Height{" "}
-                    {sortConfig.column === "height" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("gurdle")}
-                  >
-                    Gurdle{" "}
-                    {sortConfig.column === "gurdle" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("culet")}
-                  >
-                    Culet{" "}
-                    {sortConfig.column === "culet" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer  min-w-[75px]"
-                    onClick={() => handleSort("ratio")}
-                  >
-                    Ratio{" "}
-                    {sortConfig.column === "ratio" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
-                    onClick={() => handleSort("location")}
-                  >
-                    Location{" "}
-                    {sortConfig.column === "location" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {sortedData.map((stone, index) => {
-                  const isSelected = selected.some(
-                    (item) => item.stoneno === stone.stoneno
-                  );
-                  return (
-                    <tr
-                      key={index}
-                      className={`cursor-pointer ${
-                        isSelected
-                          ? "bg-theme-100"
-                          : index % 2 === 0
-                          ? "bg-white"
-                          : "bg-gray-50"
-                      } hover:bg-theme-200 transition-all duration-50 ease-in-out`}
-                      // onClick={() => handleSelection(stone)}
-                    >
-                      <td className="text-sm border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelection(stone)}
-                          className="cursor-pointer"
-                        />
-                      </td>
-                      <td className="border border-gray-300">
-                        <div className="flex justify-around items-center">
-                          <button
-                            className="text-theme-600"
-                            onClick={() => toggleCart(stone.stoneno)}
-                          >
-                            <ShoppingCart className={`w-4 h-4 `} />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-right underline">
-                        <Link
-                          to={`/stonedetails/${stone.stoneno}`}
-                          className="text-theme-600 hover:underline"
-                        >
-                          {stone.stoneno}
-                        </Link>
-                      </td>
-                      {/* https://www.gia.edu/report-check?reportno=2477875998 */}
-                      <td className="text-sm border border-gray-300 px-2 text-right underline">
-                        <Link
-                          to={`https://www.gia.edu/report-check?reportno=${stone.certificateno}`}
-                          className="text-theme-600 hover:underline"
-                        >
-                          {stone.certificateno}
-                        </Link>
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.shape}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-right">
-                        {stone.carat}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.color}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.clarity}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-right">
-                        ${formatNumber(stone.price)}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-right">
-                        {formatNumber(stone.rap)}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-right">
-                        -{stone.disc}%
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-right">
-                        {formatNumber(stone.pricepercarat || 0)}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.cut}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.polish}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.symmetry}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.fluorescence}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.lab}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.comment}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.eye}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.table}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.depth}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.crown}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.pavilion}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.length}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.width}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.height}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.gurdle}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.culet}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.ratio}
-                      </td>
-                      <td className="text-sm border border-gray-300 px-2 text-center">
-                        {stone.location}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center">
-            <div className="flex gap-4 items-center">
-              <img src={diamond} alt="Diamond" />
+        <div className="flex-1">
+          <div>
+            {/* Table Section */}
+            {sortedData?.length > 0 ? (
               <div>
-                <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                  Your Wishlist is empty
-                </h1>
-              </div>
-
-              <img src={diamond} alt="Diamond" />
-            </div>
-          </div>
-        )}
-
-        <div>
-          {wishlistItems?.length > 0 && (
-            <div>
-              {/* Pagination */}
-              <div className="flex flex-col bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
-                  {/* Rows per page dropdown - Responsive */}
-                  <div className="flex items-center">
-                    <label
-                      htmlFor="rowsPerPage"
-                      className="text-sm font-medium text-gray-600 dark:text-gray-300"
-                    >
-                      Show
-                    </label>
-                    <select
-                      id="rowsPerPage"
-                      value={rowsPerPage}
-                      onChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
-                    >
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      entries
-                    </span>
-                  </div>
-
-                  {/* Pagination Navigation - Responsive */}
-                  <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
-                    {/* Previous Button */}
-                    <button
-                      disabled={currentPage === 1}
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
-          ${
-            currentPage === 1
-              ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
-          }`}
-                    >
-                      <ChevronLeft className="h-5 w-5 block sm:hidden" />
-                      <span className="hidden sm:block">Previous</span>
-                    </button>
-
-                    {/* Page Numbers - Adaptive Display */}
-                    <div className="flex items-center gap-1.5">
-                      {Array.from(
-                        { length: Math.ceil(wishlist?.length / rowsPerPage) },
-                        (_, i) => i + 1
-                      )
-                        .filter((page) => {
-                          // Show more numbers on desktop, fewer on mobile
-                          const totalPages = Math.ceil(
-                            wishlist?.length / rowsPerPage
-                          );
-                          const isMobile = window.innerWidth < 640; // sm breakpoint
-
-                          if (isMobile) {
-                            return (
-                              page === 1 ||
-                              page === totalPages ||
-                              page === currentPage ||
-                              page === currentPage - 1 ||
-                              page === currentPage + 1
-                            );
-                          } else {
-                            return (
-                              page === 1 ||
-                              page === totalPages ||
-                              page === currentPage ||
-                              page === currentPage - 1 ||
-                              page === currentPage - 2 ||
-                              page === currentPage + 1 ||
-                              page === currentPage + 2
-                            );
-                          }
-                        })
-                        .map((page, index, array) => (
-                          <React.Fragment key={page}>
-                            {index > 0 && array[index - 1] !== page - 1 && (
-                              <span className="px-0.5 text-gray-400">...</span>
+                <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
+                  <table className="table-auto border-collapse border border-gray-300 w-full sortable">
+                    <thead>
+                      <tr className="bg-gray-100 sticky top-0 border border-gray-300 cursor-pointer">
+                        <th className="border border-gray-300 px-2 py-2 min-w-[100px] flex justify-around items-center">
+                          Select{" "}
+                          <input
+                            type="checkbox"
+                            checked={sortedData.every((stone) =>
+                              selected.some(
+                                (item) => item.stone_no === stone.stone_no
+                              )
                             )}
-                            <button
-                              onClick={() => setCurrentPage(page)}
-                              className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
-                  ${
-                    currentPage === page
-                      ? "bg-theme-600 text-white"
-                      : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
-                  }`}
+                            onChange={toggleSelectAll}
+                            className="cursor-pointer"
+                          />
+                        </th>
+                        <th className="border border-gray-300 px-2 py-2">
+                          Actions
+                        </th>
+                        <th className="border border-gray-300 px-2 cursor-pointer min-w-[100px]">
+                          Stone No{" "}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
+                          onClick={() => handleSort("LAB")}
+                        >
+                          Lab{" "}
+                          {sortConfig.column === "lab" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th className="border border-gray-300 px-2 py-2 min-w-[125px]">
+                          Certificate No
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
+                          onClick={() => handleSort("Shape")}
+                        >
+                          Shape{" "}
+                          {sortConfig.column === "Shape" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
+                          onClick={() => handleSort("Carats")}
+                        >
+                          Carat{" "}
+                          {sortConfig.column === "Carats" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          onClick={() => handleSort("Color")}
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[175px]"
+                        >
+                          Color{" "}
+                          {sortConfig.column === "Color" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          onClick={() => handleSort("Clarity")}
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
+                        >
+                          Clarity{" "}
+                          {sortConfig.column === "Clarity" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
+                          onClick={() => handleSort("Cut")}
+                        >
+                          Cut{" "}
+                          {sortConfig.column === "Cut" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
+                          onClick={() => handleSort("Polish")}
+                        >
+                          Polish{" "}
+                          {sortConfig.column === "Polish" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[125px]"
+                          onClick={() => handleSort("Symm")}
+                        >
+                          Symmetry{" "}
+                          {sortConfig.column === "Symm" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[130px]"
+                          onClick={() => handleSort("FLR")}
+                        >
+                          Fluorescence{" "}
+                          {sortConfig.column === "FLR" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th className="border border-gray-300 px-2 cursor-pointer  min-w-[150px]">
+                          Measurement{" "}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
+                          onClick={() => handleSort("TableSize")}
+                        >
+                          Table%{" "}
+                          {sortConfig.column === "TableSize" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer  min-w-[100px]"
+                          onClick={() => handleSort("DepthPer")}
+                        >
+                          Depth%{" "}
+                          {sortConfig.column === "DepthPer" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer  min-w-[150px]"
+                          onClick={() => handleSort("Shade")}
+                        >
+                          Shade{" "}
+                          {sortConfig.column === "Shade" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th className="border border-gray-300 px-2 cursor-pointer  min-w-[50px]">
+                          TB{" "}
+                        </th>
+                        <th className="border border-gray-300 px-2 cursor-pointer  min-w-[50px]">
+                          SB{" "}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[125px]"
+                          onClick={() => handleSort("liveraparate")}
+                        >
+                          Rapa Rate{" "}
+                          {sortConfig.column === "liveraparate" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
+                          onClick={() => handleSort("LiveDiscount")}
+                        >
+                          Discount{" "}
+                          {sortConfig.column === "LiveDiscount" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[75px]"
+                          onClick={() => handleSort("LiveRate")}
+                        >
+                          Rate{" "}
+                          {sortConfig.column === "LiveRate" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
+                          onClick={() => handleSort("LiveAmount")}
+                        >
+                          Amount{" "}
+                          {sortConfig.column === "LiveAmount" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                        <th
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[150px]"
+                          onClick={() => handleSort("Location")}
+                        >
+                          Location{" "}
+                          {sortConfig.column === "Location" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {sortedData.map((stone, index) => {
+                        const isSelected = selected.some(
+                          (item) => item.stone_no === stone.stone_no
+                        );
+                        return (
+                          <tr
+                            key={index}
+                            className={`cursor-pointer ${
+                              isSelected
+                                ? "bg-theme-100"
+                                : index % 2 === 0
+                                ? "bg-white"
+                                : "bg-gray-50"
+                            } hover:bg-theme-200 transition-all duration-50 ease-in-out`}
+                          >
+                            <td className="text-sm border border-gray-300 px-2 py-1 text-center">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleSelection(stone)}
+                                className="cursor-pointer"
+                              />
+                            </td>
+                            <td className="border border-gray-300">
+                              <div className="flex justify-around items-center">
+                                {/* Favorite Button */}
+                                <button
+                                  className="text-theme-600 hover:text-theme-900"
+                                  onClick={() =>
+                                    handleCartToggle(stone.stone_no)
+                                  }
+                                >
+                                  {cart.success.some(
+                                    (item) => item.stone_no === stone.stone_no
+                                  ) ? (
+                                    <IoCartSharp size={20} />
+                                  ) : (
+                                    <IoCartOutline size={20} />
+                                  )}
+                                </button>
+                              </div>
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right underline">
+                              <Link
+                                // target="_blank"
+                                to={`/stonedetails/${stone.stone_no}`}
+                                className="text-theme-600 hover:underline"
+                              >
+                                {stone.stone_no}
+                              </Link>
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.LAB}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right underline">
+                              <Link
+                                target="_blank"
+                                to={`${stone.CertificateLink}`}
+                                className="text-theme-600 hover:underline"
+                              >
+                                {stone.CertificateNo}
+                              </Link>
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Shape}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right">
+                              {stone.Carats}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Color}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Clarity}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Cut}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Polish}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Symm}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.FLR}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.measurement}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.TableSize}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.DepthPer}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Shade}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.TableBlack}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.SideBlack}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right">
+                              ${formatNumber(stone.liveraparate.toFixed(2))}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right">
+                              {stone.LiveDiscount}%
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right">
+                              ${formatNumber(stone.LiveRate.toFixed(2))}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-right">
+                              ${formatNumber(stone.LiveAmount.toFixed(2))}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Location}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  {sortedData.length > 0 && (
+                    <div>
+                      {/* Pagination */}
+                      <div className="flex flex-col bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
+                          {/* Rows per page dropdown - Responsive */}
+                          <div className="flex items-center">
+                            <label
+                              htmlFor="rowsPerPage"
+                              className="text-sm font-medium text-gray-600 dark:text-gray-300"
                             >
-                              {page}
-                            </button>
-                          </React.Fragment>
-                        ))}
+                              Show
+                            </label>
+                            <select
+                              id="rowsPerPage"
+                              value={rowsPerPage}
+                              onChange={(e) => {
+                                const value =
+                                  e.target.value === "All"
+                                    ? "All"
+                                    : parseInt(e.target.value);
+                                setRowsPerPage(value);
+                                setCurrentPage(1);
+                              }}
+                              className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
+                            >
+                              {/* <option value={25}>25</option> */}
+                              <option value={50}>50</option>
+                              <option value={100}>100</option>
+                              <option value={"All"}>All</option>
+                            </select>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">
+                              entries
+                            </span>
+                          </div>
+
+                          {/* Pagination Navigation - Responsive */}
+                          {rowsPerPage !== "All" && (
+                            <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
+                              {/* Previous Button */}
+                              <button
+                                disabled={currentPage === 1}
+                                onClick={() =>
+                                  setCurrentPage((prev) =>
+                                    Math.max(prev - 1, 1)
+                                  )
+                                }
+                                className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                      ${
+                        currentPage === 1
+                          ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
+                      }`}
+                              >
+                                <ChevronLeft className="h-5 w-5 block sm:hidden" />
+                                <span className="hidden sm:block">
+                                  Previous
+                                </span>
+                              </button>
+
+                              {/* Page Numbers */}
+                              <div className="flex items-center gap-1.5">
+                                {Array.from(
+                                  { length: totalPages },
+                                  (_, i) => i + 1
+                                )
+                                  .filter((page) => {
+                                    const isMobile = window.innerWidth < 640;
+
+                                    if (isMobile) {
+                                      return (
+                                        page === 1 ||
+                                        page === totalPages ||
+                                        page === currentPage ||
+                                        page === currentPage - 1 ||
+                                        page === currentPage + 1
+                                      );
+                                    } else {
+                                      return (
+                                        page === 1 ||
+                                        page === totalPages ||
+                                        page === currentPage ||
+                                        page === currentPage - 1 ||
+                                        page === currentPage - 2 ||
+                                        page === currentPage + 1 ||
+                                        page === currentPage + 2
+                                      );
+                                    }
+                                  })
+                                  .map((page, index, array) => (
+                                    <React.Fragment key={page}>
+                                      {index > 0 &&
+                                        array[index - 1] !== page - 1 && (
+                                          <span className="px-0.5 text-gray-400">
+                                            ...
+                                          </span>
+                                        )}
+                                      <button
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                              ${
+                                currentPage === page
+                                  ? "bg-theme-600 text-white"
+                                  : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
+                              }`}
+                                      >
+                                        {page}
+                                      </button>
+                                    </React.Fragment>
+                                  ))}
+                              </div>
+
+                              {/* Next Button */}
+                              <button
+                                disabled={currentPage === totalPages}
+                                onClick={() =>
+                                  setCurrentPage((prev) =>
+                                    Math.min(prev + 1, totalPages)
+                                  )
+                                }
+                                className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                      ${
+                        currentPage === totalPages
+                          ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
+                      }`}
+                              >
+                                <ChevronRight className="h-5 w-5 block sm:hidden" />
+                                <span className="hidden sm:block">Next</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Results Counter - Responsive */}
+                          <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
+                            {rowsPerPage === "All" ? (
+                              <span>
+                                Showing all{" "}
+                                <span className="font-medium">
+                                  {wishlistItems?.length}
+                                </span>{" "}
+                                entries
+                              </span>
+                            ) : (
+                              <>
+                                <span className="font-medium">
+                                  {Math.min(
+                                    indexOfFirstRow + 1,
+                                    wishlistItems?.length
+                                  )}
+                                  -
+                                  {Math.min(
+                                    indexOfLastRow,
+                                    wishlistItems?.length
+                                  )}
+                                </span>{" "}
+                                of{" "}
+                                <span className="font-medium">
+                                  {wishlistItems?.length}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Next Button */}
-                    <button
-                      disabled={
-                        currentPage ===
-                        Math.ceil(wishlist?.length / rowsPerPage)
-                      }
-                      onClick={() =>
-                        setCurrentPage((prev) =>
-                          Math.min(
-                            prev + 1,
-                            Math.ceil(wishlist?.length / rowsPerPage)
-                          )
-                        )
-                      }
-                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
-          ${
-            currentPage === Math.ceil(wishlist?.length / rowsPerPage)
-              ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
-          }`}
-                    >
-                      <ChevronRight className="h-5 w-5 block sm:hidden" />
-                      <span className="hidden sm:block">Next</span>
-                    </button>
-                  </div>
-
-                  {/* Results Counter - Responsive */}
-                  <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
-                    <span className="font-medium">
-                      {Math.min(indexOfFirstRow + 1, wishlist?.length)}-
-                      {Math.min(indexOfLastRow, wishlist?.length)}
-                    </span>{" "}
-                    of <span className="font-medium">{wishlist?.length}</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Totals */}
-              <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 space-y-4">
-                <div className="flex overflow-auto md:flex-row flex-col md:py-0 py-2">
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-32">
-                      Total Pieces: {totalPieces}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[150px]">
-                      Total Carat: {totalCarat}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[200px]">
-                      Total Price: ${formatNumber(totalPrice)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[175px]">
-                      Total Rap: {formatNumber(totalRap)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[150px]">
-                      Discount: {totalDiscount}%
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 justify-center">
-                  {/* Search Button */}
-                  {selected?.length > 0 && (
-                    <>
-                      <div className="flex justify-center">
-                        <button
-                          title="add to wishlist"
-                          onClick={addtocart}
-                          className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
-                        >
-                          <ShoppingCart className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="flex justify-center">
-                        <button
-                          title="Remove from wishlist"
-                          onClick={removefromcart}
-                          className="bg-red-400 md:text-sm text-xs text-white p-2 rounded-md hover:bg-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="flex justify-center">
-                        <button
-                          title="Export to Excel"
-                          onClick={exportToExcel}
-                          className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
-                        >
-                          <Sheet className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </>
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex justify-center items-center">
+                <div className="flex gap-4 items-center">
+                  <img src={diamond} alt="Diamond" />
+                  <div>
+                    <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
+                      Your wishlist is empty!
+                    </h1>
+                  </div>
+
+                  <img src={diamond} alt="Diamond" />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
+        <div></div>
       </div>
     </div>
   );

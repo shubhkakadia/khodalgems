@@ -186,7 +186,6 @@ export default function Settings() {
   const [profilePhoto, setProfilePhoto] = useState(
     user.profile_picture || ""
   );
-  const fileInputRef = useRef("");
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -227,7 +226,7 @@ export default function Settings() {
     let config = {
       method: "put",
       maxBodyLength: Infinity,
-      url: `http://43.240.8.163:5000/users/${updateData.id}`,
+      url: `http://${process.env.REACT_APP_SERVER_ADDRESS}/users/${updateData.id}`,
       headers: {
         "Content-Type": "application/json",
       },

@@ -1,22 +1,18 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import diamond from "../../assets/round.png";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Phone,
-  Sheet,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, Sheet } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { TiStarFullOutline, TiStarOutline } from "react-icons/ti";
-import Loader from "./Loader";
+import { removeFromWishlist } from "../state/removeFromWishlist";
+import { addToWishlist } from "../state/addToWishlist";
+import { MdRemoveShoppingCart } from "react-icons/md";
+import { removeFromCart } from "../state/removeFromCart";
 
 export default function Cart() {
   const clarityOrder = [
@@ -73,92 +69,72 @@ export default function Cart() {
     column: null,
     direction: "asc",
   });
-  const [favToggled, setFavToggled] = useState({});
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-  const [wishlistArray, setWishlistArray] = useState([]);
+  const wishlist = useSelector((state) => state.wishlist);
 
-  // Pagination calculations
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = cartItems?.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows =
+    rowsPerPage === "All"
+      ? cartItems
+      : cartItems?.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages =
+    rowsPerPage === "All" ? 1 : Math.ceil(cartItems?.length / rowsPerPage);
 
   // Format number with commas
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  const fetchDiamondDetail = async (number) => {
-    let data = JSON.stringify({
-      stone_no: number,
-    });
+  const fetchDiamondDetails = async (cart) => {
+    if (!cart.length) return [];
 
-    let config = {
-      method: "post",
-      maxBodyLength: Infinity,
-      url: `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/SingleStock`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: data,
-    };
+    const requests = cart.map((item) =>
+      axios.post(
+        `http://${process.env.REACT_APP_SERVER_ADDRESS}/GetStock/SingleStock`,
+        JSON.stringify({ stone_no: item.stone_no }),
+        { headers: { "Content-Type": "application/json" } }
+      )
+    );
 
-    axios
-      .request(config)
-      .then((response) => {
-        console.log(response.data.UserData);
-        setCartItems( ...cartItems, response.data.UserData );
-      })
-      .catch((error) => {
-        console.log(error);
-        setCartItems([]);
-      });
-  };
-
-  const fetchCartItems = async () => {
     try {
-      const config = {
-        method: "get",
-        url: `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await axios.request(config);
-
-      if (response.data.cartItems) {
-        setCart(response.data.cartItems);
-      } else {
-        setCart([]);
-      }
+      const responses = await Promise.all(requests);
+      return responses.map((res) => res.data.UserData[0]); // Extract relevant data
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-      setCart([]);
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
+      console.error("Error fetching diamond details:", error);
+      return [];
     }
   };
 
+  const fetchCartItems = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `http://${process.env.REACT_APP_USER_SERVER_ADDRESS}/users/${user.success.id}/cart`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setCart(response.data.cartItems || []);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      setCart([]);
+    }
+  }, [user.success.id]);
+
   useEffect(() => {
     fetchCartItems();
-  }, []);
-
-  function fetchDiamondDetailList() {
-    console.log(cart)
-    cart.forEach((item) => {fetchDiamondDetail(item.stone_no)});
-    console.log(cartItems)
-  }
+  }, [fetchCartItems]);
 
   useEffect(() => {
-    fetchDiamondDetailList();
+    if (cart.length > 0) {
+      fetchDiamondDetails(cart).then(setCartItems);
+    }
   }, [cart]);
-  
 
   const customSort = (data, column, direction) => {
     const sortedData = [...data];
@@ -269,45 +245,69 @@ export default function Cart() {
     sortConfig
   );
 
-  const toggleFav = (stoneNo) => {
-    // call api to add selected stone to wishlist
-    setFavToggled((prev) => ({
-      ...prev,
-      [stoneNo]: !prev[stoneNo],
-    }));
-  };
-
   // Calculate totals
-  const totalPieces = selected?.length;
-  const totalCarat = selected
-    .reduce((sum, stone) => sum + parseFloat(stone.carat || 0), 0)
-    .toFixed(2);
-  const totalPrice = selected
-    .reduce((sum, stone) => sum + parseFloat(stone.price || 0), 0)
-    .toFixed(2);
-  const totalRap = selected
-    .reduce((sum, stone) => sum + parseFloat(stone.rap || 0), 0)
-    .toFixed(2);
-  // Calculate total discount amount
-  const totalDiscountAmount = selected
-    .reduce((sum, stone) => {
-      const price = parseFloat(stone.price || 0);
-      const discount = parseFloat(stone.disc || 0);
-      return sum + (price * discount) / 100;
-    }, 0)
-    .toFixed(2);
-  const totalDiscount =
-    totalPrice > 0
-      ? ((totalDiscountAmount / totalPrice) * 100).toFixed(2)
-      : "0.00";
+  const memoizedCalculations = useMemo(() => {
+    // Total Pieces
+    const totalPieces = selected.length;
 
-  // Handle checkbox selection
+    // Total Carat
+    const totalCarat = selected
+      .reduce((sum, stone) => sum + parseFloat(stone.Carats || 0), 0)
+      .toFixed(2);
+
+    // Total Price
+    const totalPrice = selected
+      .reduce((sum, stone) => sum + parseFloat(stone.LiveAmount || 0), 0)
+      .toFixed(2);
+
+    // Total Rap
+    const totalRap = selected
+      .reduce((sum, stone) => sum + parseFloat(stone.liveraparate || 0), 0)
+      .toFixed(2);
+
+    // Calculate total discount amount
+    const totalDiscountAmount = selected
+      .reduce((sum, stone) => {
+        const price = parseFloat(stone.LiveAmount || 0);
+        const discount = parseFloat(stone.LiveDiscount || 0);
+        return sum + (price * discount) / 100;
+      }, 0)
+      .toFixed(2);
+
+    // Calculate total discount percentage
+    const totalDiscount =
+      totalPrice > 0
+        ? ((totalDiscountAmount / parseFloat(totalPrice)) * 100).toFixed(2)
+        : "0.00";
+
+    return {
+      totalPieces,
+      totalCarat,
+      totalPrice,
+      totalRap,
+      totalDiscount,
+    };
+  }, [selected]);
+
+  const { totalPieces, totalCarat, totalPrice, totalRap, totalDiscount } =
+    memoizedCalculations;
+
   const handleSelection = (stone) => {
     setSelected((prev) => {
-      if (prev.find((item) => item.stoneno === stone.stoneno)) {
-        return prev.filter((item) => item.stoneno !== stone.stoneno);
+      // Check if the stone is already in the selected list
+      const isAlreadySelected = prev.some(
+        (selectedStone) => selectedStone.stone_no === stone.stone_no
+      );
+
+      if (isAlreadySelected) {
+        // If already selected, remove it
+        return prev.filter(
+          (selectedStone) => selectedStone.stone_no !== stone.stone_no
+        );
+      } else {
+        // If not selected, add it
+        return [...prev, stone];
       }
-      return [...prev, stone];
     });
   };
 
@@ -354,40 +354,6 @@ export default function Cart() {
     progress: undefined,
   };
 
-  // Add to wishlist operation
-  const addtowishlist = () => {
-    if (selected?.length === 0) {
-      toast.error("Please select stones to add to wishlist", toastConfig);
-      return;
-    }
-
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      pending: "Adding to wishlist...",
-      success: `Added ${selected?.length} stone${
-        selected?.length > 1 ? "s" : ""
-      } to wishlist`,
-      error: "Failed to add to wishlist",
-      ...toastConfig,
-    });
-  };
-
-  // Remove from cart operation
-  const removefromcart = () => {
-    if (selected?.length === 0) {
-      toast.error("Please select stones to remove", toastConfig);
-      return;
-    }
-
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      pending: "Removing from cart...",
-      success: `Removed ${selected?.length} stone${
-        selected?.length > 1 ? "s" : ""
-      } from cart`,
-      error: "Failed to remove from cart",
-      ...toastConfig,
-    });
-  };
-
   const exportToExcel = () => {
     if (selected.length === 0) {
       alert("No stones selected to export!");
@@ -396,7 +362,7 @@ export default function Cart() {
 
     // Prepare data for Excel
     const data = selected.map((stone) => ({
-      "Stone No": stone.stoneno,
+      "Stone No": stone.stone_no,
       "Certificate No": stone.certificateno,
       Shape: stone.shape,
       Carat: stone.carat,
@@ -481,9 +447,38 @@ export default function Cart() {
     XLSX.writeFile(workbook, filename);
   };
 
-  const handleWishlistToggle = (stoneNo) => {};
+  const handleWishlistToggle = (stoneNo) => {
+    // Check if stone exists in wishlistArray
+    const exists = wishlist.success.some((item) => item.stone_no === stoneNo);
 
-  console.log(sortedData);
+    exists
+      ? removeFromWishlist(dispatch, user, stoneNo)
+      : addToWishlist(dispatch, user, stoneNo);
+  };
+
+  // Remove from cart operation
+  const removefromcartfunction = async () => {
+    if (selected.length === 0) {
+      toast.error("Please select stones to add to cart", toastConfig);
+      return;
+    }
+    await removeFromCart(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
+  };
+
+  const addtowishlistfunction = async () => {
+    if (selected.length === 0) {
+      toast.error("Please select stones to add to wishlist", toastConfig);
+      return;
+    }
+
+    await addToWishlist(
+      dispatch,
+      user,
+      selected.map((stone) => stone.stone_no).join(", ")
+    );
+    setSelected([]);
+  };
+
   return (
     <div className="flex w-full h-full bg-main-bg">
       <div className="flex-none md:w-20 w-14">
@@ -501,6 +496,75 @@ export default function Cart() {
               back to search
             </Link>
           </div>
+
+          {/* Totals */}
+          {selected.length > 0 && (
+            <div className="md:flex justify-center bg-main-bg gap-20">
+              <div className="flex overflow-auto md:flex-row flex-col md:py-0 py-2">
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-32">
+                    Total Pieces: {totalPieces}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[150px]">
+                    Total Carat: {totalCarat}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[200px]">
+                    Total Price: ${formatNumber(totalPrice)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[175px]">
+                    Total Rap: {formatNumber(totalRap)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="font-semibold text-theme-600 w-[150px]">
+                    Discount: {totalDiscount}%
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex gap-4 justify-center items-center">
+                  {/* Add to Cart Button */}
+                  <div className="flex justify-center"></div>
+                  <div className="flex justify-center">
+                    <button
+                      title="Remove from Cart"
+                      onClick={removefromcartfunction}
+                      className="bg-red-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-red-600"
+                    >
+                      <MdRemoveShoppingCart size={20} />
+                    </button>
+                  </div>
+                  {/* Add to Wishlist Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Add to Wishlist"
+                      onClick={addtowishlistfunction}
+                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
+                    >
+                      <TiStarOutline size={20} />
+                    </button>
+                  </div>
+                  {/* Export to Excel Button */}
+                  <div className="flex justify-center">
+                    <button
+                      title="Export to Excel"
+                      onClick={exportToExcel}
+                      className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
+                    >
+                      <Sheet className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={() => navigate("/contactus")}
@@ -525,10 +589,10 @@ export default function Cart() {
         </div>
 
         <div className="flex-1">
-
-            <div>
-              {/* Table Section */}
-              {sortedData?.length > 0 ? (
+          <div>
+            {/* Table Section */}
+            {sortedData?.length > 0 ? (
+              <div>
                 <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
                   <table className="table-auto border-collapse border border-gray-300 w-full sortable">
                     <thead>
@@ -539,7 +603,7 @@ export default function Cart() {
                             type="checkbox"
                             checked={sortedData.every((stone) =>
                               selected.some(
-                                (item) => item.stoneno === stone.stoneno
+                                (item) => item.stone_no === stone.stone_no
                               )
                             )}
                             onChange={toggleSelectAll}
@@ -548,7 +612,7 @@ export default function Cart() {
                         </th>
                         <th className="border border-gray-300 px-2 py-2">
                           Actions
-                        </th>{" "}
+                        </th>
                         <th className="border border-gray-300 px-2 cursor-pointer min-w-[100px]">
                           Stone No{" "}
                         </th>
@@ -557,7 +621,7 @@ export default function Cart() {
                           onClick={() => handleSort("LAB")}
                         >
                           Lab{" "}
-                          {sortConfig.column === "LAB" &&
+                          {sortConfig.column === "lab" &&
                             (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </th>
                         <th className="border border-gray-300 px-2 py-2 min-w-[125px]">
@@ -581,7 +645,7 @@ export default function Cart() {
                         </th>
                         <th
                           onClick={() => handleSort("Color")}
-                          className="border border-gray-300 px-2 cursor-pointer min-w-[100px]"
+                          className="border border-gray-300 px-2 cursor-pointer min-w-[175px]"
                         >
                           Color{" "}
                           {sortConfig.column === "Color" &&
@@ -706,7 +770,7 @@ export default function Cart() {
                     <tbody>
                       {sortedData.map((stone, index) => {
                         const isSelected = selected.some(
-                          (item) => item.stoneno === stone.stoneno
+                          (item) => item.stone_no === stone.stone_no
                         );
                         return (
                           <tr
@@ -718,7 +782,6 @@ export default function Cart() {
                                 ? "bg-white"
                                 : "bg-gray-50"
                             } hover:bg-theme-200 transition-all duration-50 ease-in-out`}
-                            // onClick={() => handleSelection(stone)}
                           >
                             <td className="text-sm border border-gray-300 px-2 py-1 text-center">
                               <input
@@ -737,7 +800,7 @@ export default function Cart() {
                                     handleWishlistToggle(stone.stone_no)
                                   }
                                 >
-                                  {wishlistArray.some(
+                                  {wishlist.success.some(
                                     (item) => item.stone_no === stone.stone_no
                                   ) ? (
                                     <TiStarFullOutline size={20} />
@@ -749,6 +812,7 @@ export default function Cart() {
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-right underline">
                               <Link
+                                // target="_blank"
                                 to={`/stonedetails/${stone.stone_no}`}
                                 className="text-theme-600 hover:underline"
                               >
@@ -779,16 +843,16 @@ export default function Cart() {
                             <td className="text-sm border border-gray-300 px-2 text-center">
                               {stone.Clarity}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-right">
-                              ${stone.Cut}
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.Cut}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-right">
+                            <td className="text-sm border border-gray-300 px-2 text-center">
                               {stone.Polish}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-right">
+                            <td className="text-sm border border-gray-300 px-2 text-center">
                               {stone.Symm}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-right">
+                            <td className="text-sm border border-gray-300 px-2 text-center">
                               {stone.FLR}
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-center">
@@ -798,21 +862,27 @@ export default function Cart() {
                               {stone.TableSize}
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.DepthPer}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
                               {stone.Shade}
+                            </td>
+                            <td className="text-sm border border-gray-300 px-2 text-center">
+                              {stone.TableBlack}
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-center">
                               {stone.SideBlack}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-center">
+                            <td className="text-sm border border-gray-300 px-2 text-right">
                               ${formatNumber(stone.liveraparate.toFixed(2))}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-center">
+                            <td className="text-sm border border-gray-300 px-2 text-right">
                               {stone.LiveDiscount}%
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-center">
+                            <td className="text-sm border border-gray-300 px-2 text-right">
                               ${formatNumber(stone.LiveRate.toFixed(2))}
                             </td>
-                            <td className="text-sm border border-gray-300 px-2 text-center">
+                            <td className="text-sm border border-gray-300 px-2 text-right">
                               ${formatNumber(stone.LiveAmount.toFixed(2))}
                             </td>
                             <td className="text-sm border border-gray-300 px-2 text-center">
@@ -824,250 +894,190 @@ export default function Cart() {
                     </tbody>
                   </table>
                 </div>
-              ) : (
-                <div className="flex justify-center items-center">
-                  <div className="flex gap-4 items-center">
-                    <img src={diamond} alt="Diamond" />
+                <div>
+                  {sortedData.length > 0 && (
                     <div>
-                      <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                        Your cart is empty!
-                      </h1>
-                    </div>
-
-                    <img src={diamond} alt="Diamond" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-        </div>
-
-        <div>
-          {cartItems?.length > 0 && (
-            <div>
-              {/* Pagination Section - Same as Stones component */}
-              {/* Pagination */}
-              <div className="flex flex-col sticky bottom-0 bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
-                  {/* Rows per page dropdown - Responsive */}
-                  <div className="flex items-center">
-                    <label
-                      htmlFor="rowsPerPage"
-                      className="text-sm font-medium text-gray-600 dark:text-gray-300"
-                    >
-                      Show
-                    </label>
-                    <select
-                      id="rowsPerPage"
-                      value={rowsPerPage}
-                      onChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
-                    >
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      entries
-                    </span>
-                  </div>
-
-                  {/* Pagination Navigation - Responsive */}
-                  <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
-                    {/* Previous Button */}
-                    <button
-                      disabled={currentPage === 1}
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
-          ${
-            currentPage === 1
-              ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
-          }`}
-                    >
-                      <ChevronLeft className="h-5 w-5 block sm:hidden" />
-                      <span className="hidden sm:block">Previous</span>
-                    </button>
-
-                    {/* Page Numbers - Adaptive Display */}
-                    <div className="flex items-center gap-1.5">
-                      {Array.from(
-                        {
-                          length: Math.ceil(
-                            cartItems.success?.length / rowsPerPage
-                          ),
-                        },
-                        (_, i) => i + 1
-                      )
-                        .filter((page) => {
-                          // Show more numbers on desktop, fewer on mobile
-                          const totalPages = Math.ceil(
-                            cartItems.success?.length / rowsPerPage
-                          );
-                          const isMobile = window.innerWidth < 640; // sm breakpoint
-
-                          if (isMobile) {
-                            return (
-                              page === 1 ||
-                              page === totalPages ||
-                              page === currentPage ||
-                              page === currentPage - 1 ||
-                              page === currentPage + 1
-                            );
-                          } else {
-                            return (
-                              page === 1 ||
-                              page === totalPages ||
-                              page === currentPage ||
-                              page === currentPage - 1 ||
-                              page === currentPage - 2 ||
-                              page === currentPage + 1 ||
-                              page === currentPage + 2
-                            );
-                          }
-                        })
-                        .map((page, index, array) => (
-                          <React.Fragment key={page}>
-                            {index > 0 && array[index - 1] !== page - 1 && (
-                              <span className="px-0.5 text-gray-400">...</span>
-                            )}
-                            <button
-                              onClick={() => setCurrentPage(page)}
-                              className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
-                  ${
-                    currentPage === page
-                      ? "bg-theme-600 text-white"
-                      : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
-                  }`}
+                      {/* Pagination */}
+                      <div className="flex flex-col bg-main-bg border-t border-gray-100 dark:border-gray-700 p-2 px-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4">
+                          {/* Rows per page dropdown - Responsive */}
+                          <div className="flex items-center">
+                            <label
+                              htmlFor="rowsPerPage"
+                              className="text-sm font-medium text-gray-600 dark:text-gray-300"
                             >
-                              {page}
-                            </button>
-                          </React.Fragment>
-                        ))}
+                              Show
+                            </label>
+                            <select
+                              id="rowsPerPage"
+                              value={rowsPerPage}
+                              onChange={(e) => {
+                                const value =
+                                  e.target.value === "All"
+                                    ? "All"
+                                    : parseInt(e.target.value);
+                                setRowsPerPage(value);
+                                setCurrentPage(1);
+                              }}
+                              className="mx-2 h-9 w-16 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 text-sm focus:border-theme-500 focus:ring-theme-500"
+                            >
+                              {/* <option value={25}>25</option> */}
+                              <option value={50}>50</option>
+                              <option value={100}>100</option>
+                              <option value={"All"}>All</option>
+                            </select>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">
+                              entries
+                            </span>
+                          </div>
+
+                          {/* Pagination Navigation - Responsive */}
+                          {rowsPerPage !== "All" && (
+                            <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
+                              {/* Previous Button */}
+                              <button
+                                disabled={currentPage === 1}
+                                onClick={() =>
+                                  setCurrentPage((prev) =>
+                                    Math.max(prev - 1, 1)
+                                  )
+                                }
+                                className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                      ${
+                        currentPage === 1
+                          ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
+                      }`}
+                              >
+                                <ChevronLeft className="h-5 w-5 block sm:hidden" />
+                                <span className="hidden sm:block">
+                                  Previous
+                                </span>
+                              </button>
+
+                              {/* Page Numbers */}
+                              <div className="flex items-center gap-1.5">
+                                {Array.from(
+                                  { length: totalPages },
+                                  (_, i) => i + 1
+                                )
+                                  .filter((page) => {
+                                    const isMobile = window.innerWidth < 640;
+
+                                    if (isMobile) {
+                                      return (
+                                        page === 1 ||
+                                        page === totalPages ||
+                                        page === currentPage ||
+                                        page === currentPage - 1 ||
+                                        page === currentPage + 1
+                                      );
+                                    } else {
+                                      return (
+                                        page === 1 ||
+                                        page === totalPages ||
+                                        page === currentPage ||
+                                        page === currentPage - 1 ||
+                                        page === currentPage - 2 ||
+                                        page === currentPage + 1 ||
+                                        page === currentPage + 2
+                                      );
+                                    }
+                                  })
+                                  .map((page, index, array) => (
+                                    <React.Fragment key={page}>
+                                      {index > 0 &&
+                                        array[index - 1] !== page - 1 && (
+                                          <span className="px-0.5 text-gray-400">
+                                            ...
+                                          </span>
+                                        )}
+                                      <button
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`min-w-[36px] h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                              ${
+                                currentPage === page
+                                  ? "bg-theme-600 text-white"
+                                  : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
+                              }`}
+                                      >
+                                        {page}
+                                      </button>
+                                    </React.Fragment>
+                                  ))}
+                              </div>
+
+                              {/* Next Button */}
+                              <button
+                                disabled={currentPage === totalPages}
+                                onClick={() =>
+                                  setCurrentPage((prev) =>
+                                    Math.min(prev + 1, totalPages)
+                                  )
+                                }
+                                className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                      ${
+                        currentPage === totalPages
+                          ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
+                      }`}
+                              >
+                                <ChevronRight className="h-5 w-5 block sm:hidden" />
+                                <span className="hidden sm:block">Next</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Results Counter - Responsive */}
+                          <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
+                            {rowsPerPage === "All" ? (
+                              <span>
+                                Showing all{" "}
+                                <span className="font-medium">
+                                  {cartItems?.length}
+                                </span>{" "}
+                                entries
+                              </span>
+                            ) : (
+                              <>
+                                <span className="font-medium">
+                                  {Math.min(
+                                    indexOfFirstRow + 1,
+                                    cartItems?.length
+                                  )}
+                                  -{Math.min(indexOfLastRow, cartItems?.length)}
+                                </span>{" "}
+                                of{" "}
+                                <span className="font-medium">
+                                  {cartItems?.length}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Next Button */}
-                    <button
-                      disabled={
-                        currentPage ===
-                        Math.ceil(cartItems.success?.length / rowsPerPage)
-                      }
-                      onClick={() =>
-                        setCurrentPage((prev) =>
-                          Math.min(
-                            prev + 1,
-                            Math.ceil(cartItems.success?.length / rowsPerPage)
-                          )
-                        )
-                      }
-                      className={`h-9 px-3 flex items-center justify-center rounded-lg text-sm font-medium transition-colors
-          ${
-            currentPage === Math.ceil(cartItems.success?.length / rowsPerPage)
-              ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-              : "bg-white text-theme-600 hover:bg-theme-50 border border-gray-200 dark:border-gray-700"
-          }`}
-                    >
-                      <ChevronRight className="h-5 w-5 block sm:hidden" />
-                      <span className="hidden sm:block">Next</span>
-                    </button>
-                  </div>
-
-                  {/* Results Counter - Responsive */}
-                  <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
-                    <span className="font-medium">
-                      {Math.min(indexOfFirstRow + 1, cartItems.success?.length)}
-                      -{Math.min(indexOfLastRow, cartItems.success?.length)}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-medium">
-                      {cartItems.success?.length}
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Totals */}
-              <div className="md:flex justify-center sticky bottom-0 bg-main-bg pb-2 ">
-                <div className="flex overflow-auto md:flex-row flex-col md:py-0 py-2">
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-32">
-                      Total Pieces: {totalPieces}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[150px]">
-                      Total Carat: {totalCarat}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[200px]">
-                      Total Price: ${formatNumber(totalPrice)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[175px]">
-                      Total Rap: {formatNumber(totalRap)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <p className="font-semibold text-theme-600 w-[150px]">
-                      Discount: {totalDiscount}%
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 justify-center">
-                  {/* Search Button */}
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => navigate("/contact")}
-                      className="md:text-sm text-xs bg-theme-600 text-white px-4 py-2 rounded-lg hover:bg-theme-700 transition-colors flex items-center gap-2"
-                    >
-                      <Phone className="h-5 w-5" />
-                      Contact Us
-                    </button>
-                  </div>
-                  {selected.length > 0 && (
-                    <>
-                      <div className="flex justify-center">
-                        <button
-                          title="add to wishlist"
-                          onClick={addtowishlist}
-                          className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600"
-                        >
-                          <Star className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="flex justify-center">
-                        <button
-                          title="Remove from Cart"
-                          onClick={removefromcart}
-                          className="bg-red-400 md:text-sm text-xs text-white p-2 rounded-md hover:bg-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="flex justify-center">
-                        <button
-                          title="Export to Excel"
-                          onClick={exportToExcel}
-                          className="bg-[#3E8F62] flex items-center gap-2 md:text-sm text-xs text-white p-2 rounded-md hover:bg-[#1D6F42]"
-                        >
-                          <Sheet className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </>
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex justify-center items-center">
+                <div className="flex gap-4 items-center">
+                  <img src={diamond} alt="Diamond" />
+                  <div>
+                    <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
+                      Your cart is empty!
+                    </h1>
+                  </div>
+
+                  <img src={diamond} alt="Diamond" />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
+        <div></div>
       </div>
     </div>
   );

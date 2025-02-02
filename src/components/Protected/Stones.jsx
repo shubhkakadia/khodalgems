@@ -484,7 +484,6 @@ export default function Stones() {
       return;
     }
     await addToCart(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
-    // setSelected([]);
   };
 
   const handleWishlistToggle = (stoneNo) => {
@@ -936,7 +935,6 @@ export default function Stones() {
                               <td className="text-sm border border-gray-300 px-2 text-center">
                                 {stone.SideBlack}
                               </td>
-
                               <td className="text-sm border border-gray-300 px-2 text-right">
                                 ${formatNumber(stone.liveraparate.toFixed(2))}
                               </td>
