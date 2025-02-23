@@ -29,6 +29,10 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 const FloatingShapes = () => {
+  const SPEED_MULTIPLIER = 0.3;
+  const WALL_SPEED_BOOST = 1.3; // Speed increase factor on wall collision
+  const MAX_SPEED = 2; // Maximum allowed speed
+  
   const shapes = [
     Asscher,
     Cushion,
@@ -43,41 +47,184 @@ const FloatingShapes = () => {
   ];
 
   const totalShapes = Math.floor(Math.random() * 16) + 15;
-
-  const randomShapes = Array.from({ length: totalShapes }, () => {
+  
+  const initialShapes = Array.from({ length: totalShapes }, () => {
     const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
     const size = Math.floor(Math.random() * 49) + 32;
     const left = Math.random() * 100;
     const top = Math.random() * 100;
-    const delay = Math.random() * 20;
     const rotation = Math.random() * 360;
-
+    
     return {
       shape: randomShape,
       size,
       left,
       top,
-      delay,
       rotation,
+      velocityX: (Math.random() - 0.5) * SPEED_MULTIPLIER,
+      velocityY: (Math.random() - 0.5) * SPEED_MULTIPLIER,
+      angularVelocity: 0,
     };
   });
 
+  const [animatedShapes, setAnimatedShapes] = useState(initialShapes);
+
+  const pixelsToPercent = (pixels) => pixels / window.innerWidth * 100;
+
+  const checkCollision = (shape1, shape2) => {
+    const size1Percent = pixelsToPercent(shape1.size);
+    const size2Percent = pixelsToPercent(shape2.size);
+    
+    const center1 = {
+      x: shape1.left + size1Percent / 2,
+      y: shape1.top + size1Percent / 2
+    };
+    
+    const center2 = {
+      x: shape2.left + size2Percent / 2,
+      y: shape2.top + size2Percent / 2
+    };
+
+    const dx = center1.x - center2.x;
+    const dy = center1.y - center2.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const minDistance = (size1Percent + size2Percent) / 2;
+
+    return distance < minDistance;
+  };
+
+  const handleCollision = (shape1, shape2) => {
+    const size1Percent = pixelsToPercent(shape1.size);
+    const size2Percent = pixelsToPercent(shape2.size);
+
+    const center1 = {
+      x: shape1.left + size1Percent / 2,
+      y: shape1.top + size1Percent / 2
+    };
+    
+    const center2 = {
+      x: shape2.left + size2Percent / 2,
+      y: shape2.top + size2Percent / 2
+    };
+
+    const dx = center2.x - center1.x;
+    const dy = center2.y - center1.y;
+    const angle = Math.atan2(dy, dx);
+    const normal = { x: Math.cos(angle), y: Math.sin(angle) };
+    
+    const v1 = Math.sqrt(shape1.velocityX * shape1.velocityX + shape1.velocityY * shape1.velocityY);
+    const v2 = Math.sqrt(shape2.velocityX * shape2.velocityX + shape2.velocityY * shape2.velocityY);
+    
+    const overlap = (size1Percent + size2Percent) / 2 - Math.sqrt(dx * dx + dy * dy);
+    if (overlap > 0) {
+      const pushX = (overlap / 2) * Math.cos(angle);
+      const pushY = (overlap / 2) * Math.sin(angle);
+      
+      const newShape1 = {
+        ...shape1,
+        left: shape1.left - pushX,
+        top: shape1.top - pushY,
+        velocityX: -normal.x * v2 * 0.8,
+        velocityY: -normal.y * v2 * 0.8,
+        angularVelocity: (Math.random() - 0.5) * 10,
+      };
+      
+      const newShape2 = {
+        ...shape2,
+        left: shape2.left + pushX,
+        top: shape2.top + pushY,
+        velocityX: normal.x * v1 * 0.8,
+        velocityY: normal.y * v1 * 0.8,
+        angularVelocity: (Math.random() - 0.5) * 10,
+      };
+      
+      return [newShape1, newShape2];
+    }
+    
+    return [shape1, shape2];
+  };
+
+  // Helper function to limit speed
+  const clampSpeed = (velocity) => {
+    const speed = Math.abs(velocity);
+    if (speed > MAX_SPEED) {
+      return (velocity / speed) * MAX_SPEED;
+    }
+    return velocity;
+  };
+
+  useEffect(() => {
+    const updateFrame = () => {
+      setAnimatedShapes(prevShapes => {
+        const newShapes = [...prevShapes];
+        
+        for (let i = 0; i < newShapes.length; i++) {
+          for (let j = i + 1; j < newShapes.length; j++) {
+            if (checkCollision(newShapes[i], newShapes[j])) {
+              const [newShape1, newShape2] = handleCollision(newShapes[i], newShapes[j]);
+              newShapes[i] = newShape1;
+              newShapes[j] = newShape2;
+            }
+          }
+        }
+        
+        return newShapes.map(shape => {
+          const sizePercent = pixelsToPercent(shape.size);
+          let newLeft = shape.left + shape.velocityX;
+          let newTop = shape.top + shape.velocityY;
+          let newVelocityX = shape.velocityX;
+          let newVelocityY = shape.velocityY;
+          let newRotation = (shape.rotation + shape.angularVelocity) % 360;
+          let newAngularVelocity = shape.angularVelocity * 0.95;
+
+          // Bounce off walls with speed boost
+          if (newLeft <= 0 || newLeft >= (100 - sizePercent)) {
+            newVelocityX = -newVelocityX * WALL_SPEED_BOOST; // Increase speed on wall collision
+            newVelocityX = clampSpeed(newVelocityX); // Limit maximum speed
+            newLeft = Math.max(0, Math.min(100 - sizePercent, newLeft));
+            newAngularVelocity = (Math.random() - 0.5) * 10;
+          }
+          
+          if (newTop <= 0 || newTop >= (100 - sizePercent)) {
+            newVelocityY = -newVelocityY * WALL_SPEED_BOOST; // Increase speed on wall collision
+            newVelocityY = clampSpeed(newVelocityY); // Limit maximum speed
+            newTop = Math.max(0, Math.min(100 - sizePercent, newTop));
+            newAngularVelocity = (Math.random() - 0.5) * 10;
+          }
+
+          return {
+            ...shape,
+            left: newLeft,
+            top: newTop,
+            rotation: newRotation,
+            velocityX: newVelocityX,
+            velocityY: newVelocityY,
+            angularVelocity: newAngularVelocity,
+          };
+        });
+      });
+    };
+
+    const animationInterval = setInterval(updateFrame, 16);
+    return () => clearInterval(animationInterval);
+  }, []);
+
   return (
     <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
-      {randomShapes.map((item, index) => (
+      {animatedShapes.map((item, index) => (
         <div
           key={`${item.shape}-${index}`}
-          className="absolute animate-float"
+          className="absolute transition-all duration-[16ms] ease-linear"
           style={{
             left: `${item.left}%`,
             top: `${item.top}%`,
-            animation: `float 20s infinite ${item.delay}s linear`,
             transform: `rotate(${item.rotation}deg)`,
           }}
         >
           <img
             src={item.shape}
             alt="Diamond shape"
+            className="transition-transform"
             style={{
               width: `${item.size}px`,
               height: `${item.size}px`,
@@ -88,6 +235,7 @@ const FloatingShapes = () => {
     </div>
   );
 };
+
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);

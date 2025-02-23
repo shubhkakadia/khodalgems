@@ -10,23 +10,93 @@ import {
   Video,
   Mail,
   MessageSquare,
+  User,
+  MapPin,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import emailjs from '@emailjs/browser';
 
 export default function ContactUs() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
   });
+  const offices = [
+    {
+      city: "Surat",
+      type: "(Manufacturing)",
+      address:
+        "A-101, Kamla Estate Savani Road, Mini Bazar, Varachha, Kodiyar Nagar, Surat, Gujarat 395006, India",
+      contactPerson: "Vinod vadsak",
+      contactNumber: "+91 94096 58456",
+      complete: true,
+    },
+    {
+      city: "Mumbai",
+      type: "",
+      address: "AE-3071/72 Bharat Diamond Bourse, BKC, Bandra (E), Mumbai, Maharastra, 400051, India",
+      contactPerson: "Rajesh Kakadia",
+      contactNumber: "+91 99201 78885",
+      complete: true,
+    },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add form submission logic here
-    toast.success("Message sent successfully!");
+    
+    // Show loading toast
+    const toastId = toast.loading("Sending message...");
+    
+    // EmailJS send email
+    emailjs.send(
+      process.env.REACT_APP_EMAILJS_SERVICE_ID, // Replace with your EmailJS service ID
+      process.env.REACT_APP_EMAILJS_TEMPLATE_ID, // Replace with your template ID
+      {
+        from_name: formData.name,
+        reply_to: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+      },
+      process.env.REACT_APP_EMAILJS_PUBLIC_KEY // Replace with your public key
+    )
+      .then(() => {
+        // Update loading toast to success
+        toast.update(toastId, {
+          render: "Message sent successfully! ",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000
+        });
+        
+        // Clear form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+      })
+      .catch((error) => {
+        // Update loading toast to error
+        toast.update(toastId, {
+          render: "Failed to send message. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000
+        });
+        console.error("EmailJS Error:", error);
+      });
+  };
+
+  const openInGoogleMaps = (address) => {
+    if (!address) return;
+    const encodedAddress = encodeURIComponent(address);
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
+      "_blank"
+    );
   };
 
   const handleInputChange = (e) => {
@@ -117,17 +187,66 @@ export default function ContactUs() {
           </div>
 
           {/* Right Column - Map */}
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-              <iframe
-                title="map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3719.516063161418!2d72.84461787471932!3d21.211375081482384!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be04fcef815cfdd%3A0x989b790402acb15a!2sKhodal%20Gems!5e0!3m2!1sen!2sin!4v1733311795998!5m2!1sen!2sin"
-                width="700"
-                height="500"
-                allowfullscreen=""
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              ></iframe>
+          <div className="w-full h-[300px] md:h-auto">
+            <div className="w-full h-full bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-4 p-4">
+                {offices.map((office, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() =>
+                      office.complete && openInGoogleMaps(office.address)
+                    }
+                  >
+                    <div className="flex items-start space-x-2">
+                      <MapPin className="w-5 h-5 text-theme-500 mt-1 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {office.city}
+                          {office.type && (
+                            <span className="text-sm text-gray-600 ml-1">
+                              {office.type}
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {office.country}
+                        </p>
+                      </div>
+                    </div>
+
+                    {office.complete ? (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm text-gray-700">
+                          {office.address}
+                        </p>
+
+                        {office.contactPerson && (
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <p className="text-sm text-gray-600">
+                              {office.contactPerson}
+                            </p>
+                          </div>
+                        )}
+
+                        {office.contactNumber && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <p className="text-sm text-gray-600">
+                              {office.contactNumber}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-sm text-gray-500 italic">
+                        Address details coming soon
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

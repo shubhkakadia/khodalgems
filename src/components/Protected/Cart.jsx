@@ -13,6 +13,7 @@ import { removeFromWishlist } from "../state/removeFromWishlist";
 import { addToWishlist } from "../state/addToWishlist";
 import { MdRemoveShoppingCart } from "react-icons/md";
 import { removeFromCart } from "../state/removeFromCart";
+import Loader from "./Loader";
 
 export default function Cart() {
   const clarityOrder = [
@@ -81,13 +82,93 @@ export default function Cart() {
       : cartItems?.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages =
     rowsPerPage === "All" ? 1 : Math.ceil(cartItems?.length / rowsPerPage);
-
+  const soldStone = {
+    stone_no: "Stone Sold",
+    Carats: 0,
+    Shape: "",
+    LAB: "",
+    CertificateNo: "",
+    Color: "",
+    Intensity: "",
+    Overtone: "",
+    FancyColor: "",
+    Clarity: "",
+    Cut: "",
+    Polish: "",
+    Symm: "",
+    FLR: "",
+    measurement: "",
+    StoneLength: 0,
+    StoneWidth: 0,
+    StoneHeight: 0,
+    DepthPer: 0,
+    TableSize: 0,
+    CrownHeight: 0,
+    CrownAngle: 0,
+    PavillionHeight: 0,
+    PavillionAngle: 0,
+    GirdlePer: 0,
+    StoneImage: "",
+    LWRatio: "",
+    Location: "MUMBAI",
+    Branch: "SURAT",
+    liveraparate: 0,
+    LiveDiscount: 0,
+    LiveRate: 0,
+    LiveAmount: 0,
+    remarks: "",
+    InwardDate: "",
+    stockstatus: "",
+    webstatus: "",
+    JobNo: "",
+    ControlNo: "",
+    ReportType: "",
+    ReportDate: "",
+    MemoNo: "",
+    Girdle: "",
+    GirdleCondition: "",
+    CuletSize: "",
+    StrLn: 0,
+    LrHalf: 0,
+    Painting: "",
+    Proportion: "",
+    PolishFeatures: "",
+    SymmFeatures: "",
+    KeytoSymbols: "",
+    ReportComments: "",
+    Inscription: "",
+    Ratio: 0,
+    TableInc: "",
+    SideInc: "",
+    TableBlack: "",
+    SideBlack: "",
+    HNA: "",
+    TableOpen: "",
+    SideOpen: "",
+    ExtFac: "",
+    Shade: "",
+    Lst: "",
+    RedSpot: "",
+    EyeClean: "",
+    BoxName: "",
+    ColorDesc: "",
+    FlrColor: "",
+    Treatment: "",
+    MemberComment: "WhatsApp : ",
+    GrowthType: "",
+    SizeCode: "",
+    Holdstatus: "",
+    CertificateLink: "",
+    PhotoLink: "",
+    VedioLink: "",
+    BGM: null,
+  };
   // Format number with commas
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  const fetchDiamondDetails = async (cart) => {
+  const fetchDiamondDetails = async (dispatch, user, cart) => {
     if (!cart.length) return [];
 
     const requests = cart.map((item) =>
@@ -100,7 +181,29 @@ export default function Cart() {
 
     try {
       const responses = await Promise.all(requests);
-      return responses.map((res) => res.data.UserData[0]);
+
+      // Keep track of sold stones to remove them from cart
+      const soldStones = [];
+
+      // Process responses and identify sold stones
+      responses.forEach((res, index) => {
+        if (res.data.UserData[0] === undefined) {
+          soldStones.push(cart[index].stone_no);
+        }
+      });
+      // Remove sold stones from user's cart
+      if (soldStones.length > 0) {
+        soldStones?.forEach((stone_no) => {
+          removeFromCart(dispatch, user, stone_no);
+          // Optional: Show notification to user about removed stones
+        });
+      }
+
+      // Filter and return available stones
+      const filteredResponses = responses.filter(
+        (res) => res.data.UserData[0] !== undefined
+      );
+      return filteredResponses.map((res) => res.data.UserData[0]);
     } catch (error) {
       console.error("Error fetching diamond details:", error);
       return [];
@@ -132,7 +235,7 @@ export default function Cart() {
 
   useEffect(() => {
     if (cart.length > 0) {
-      fetchDiamondDetails(cart).then(setCartItems);
+      fetchDiamondDetails(dispatch, user, cart)?.then(setCartItems);
     }
   }, [cart]);
 
@@ -361,68 +464,65 @@ export default function Cart() {
     }
 
     // Prepare data for Excel
+    // Prepare data for Excel
     const data = selected.map((stone) => ({
-      "Stone No": stone.stone_no,
-      "Certificate No": stone.certificateno,
-      Shape: stone.shape,
-      Carat: stone.carat,
-      Color: stone.color,
-      Clarity: stone.clarity,
-      Price: stone.price,
-      Rap: stone.rap,
-      Discount: stone.disc,
-      "$/Carat": stone.pricepercarat || 0,
-      Cut: stone.cut,
-      Polish: stone.polish,
-      Symmetry: stone.symmetry,
-      Fluorescence: stone.fluorescence,
-      Lab: stone.lab,
-      Comment: stone.comment,
-      "Eye Clean": stone.eye,
-      "Table%": stone.table,
-      "Depth%": stone.depth,
-      "Crown%": stone.crown,
-      "Pavilion%": stone.pavilion,
-      Length: stone.length,
-      Width: stone.width,
-      Height: stone.height,
-      Gurdle: stone.gurdle,
-      Culet: stone.culet,
-      Ratio: stone.ratio,
-      Location: stone.location,
+      "Cert Date": new Date(stone.ReportDate).toLocaleDateString("en-GB").replace(/\//g, "-"),
+      "Report No": stone.CertificateNo,
+      Lab: stone.LAB,
+      "Stock ID": stone.stone_no,
+      Shp: stone.Shape,
+      Crt: stone.Carats,
+      Col: stone.Color,
+      Cla: stone.Clarity,
+      Cut: stone.Cut,
+      Pol: stone.Polish,
+      Sym: stone.Symm,
+      Flo: stone.FLR,
+      Measurment: stone.measurement,
+      "Table %": stone.TableSize,
+      "Depth %": stone.DepthPer,
+      "Table Black": stone.TableBlack,
+      "Side Black": stone.SideBlack,
+      Shade: stone.Shade,
+      Rap: stone.liveraparate,
+      "R Amt": stone.LiveRate,
+      "Disc%": stone.LiveDiscount,
+      Price: stone.LiveAmount,
+      Amt: stone.LiveAmount,
+      "Cert View": stone.CertificateLink,
+      "360 View": stone.VedioLink,
+      Photo: stone.PhotoLink,
     }));
 
     data.push(
       {},
       {
-        "Stone No": "TOTALS",
-        "Certificate No": "",
-        Shape: "",
-        Carat: totalCarat,
-        Color: "",
-        Clarity: "",
-        Price: totalPrice,
-        Rap: totalRap,
-        Discount: `${totalDiscount}%`,
-        "$/Carat": "",
-        Cut: "",
-        Polish: "",
-        Symmetry: "",
-        Fluorescence: "",
+        "Cert Date": "",
+        "Report No": "",
         Lab: "",
-        Comment: "",
-        "Eye Clean": "",
-        "Table%": "",
-        "Depth%": "",
-        "Crown%": "",
-        "Pavilion%": "",
-        Length: "",
-        Width: "",
-        Height: "",
-        Gurdle: "",
-        Culet: "",
-        Ratio: "",
-        Location: "",
+        "Stock ID": "TOTALS",
+        Shp: "",
+        Crt: totalCarat,
+        Col: "",
+        Cla: "",
+        Cut: "",
+        Pol: "",
+        Sym: "",
+        Flo: "",
+        Measurment: "",
+        "Table %": "",
+        "Depth %": "",
+        "Table Black": "",
+        "Side Black": "",
+        Shade: "",
+        Rap: totalRap,
+        "R Amt": "",
+        "Disc%": `${totalDiscount}%`,
+        Price: totalPrice,
+        Amt: totalPrice,
+        "Cert View": "",
+        "360 View": "",
+        Photo: "",
       }
     );
 
@@ -462,7 +562,11 @@ export default function Cart() {
       toast.error("Please select stones to add to cart", toastConfig);
       return;
     }
-    await removeFromCart(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
+    await removeFromCart(
+      dispatch,
+      user,
+      selected.map((stone) => stone.stone_no).join(", ")
+    );
   };
 
   const addtowishlistfunction = async () => {
@@ -589,9 +693,9 @@ export default function Cart() {
         </div>
 
         <div className="flex-1">
-          <div>
-            {/* Table Section */}
-            {sortedData?.length > 0 ? (
+        {sortedData.length === 0 ? (<div>
+              <Loader />
+            </div>) : (
               <div>
                 <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
                   <table className="table-auto border-collapse border border-gray-300 w-full sortable">
@@ -772,6 +876,7 @@ export default function Cart() {
                         const isSelected = selected.some(
                           (item) => item.stone_no === stone.stone_no
                         );
+
                         return (
                           <tr
                             key={index}
@@ -1059,24 +1164,8 @@ export default function Cart() {
                   )}
                 </div>
               </div>
-            ) : (
-              <div className="flex justify-center items-center">
-                <div className="flex gap-4 items-center">
-                  <img src={diamond} alt="Diamond" />
-                  <div>
-                    <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                      Your cart is empty!
-                    </h1>
-                  </div>
-
-                  <img src={diamond} alt="Diamond" />
-                </div>
-              </div>
             )}
-          </div>
         </div>
-
-        <div></div>
       </div>
     </div>
   );

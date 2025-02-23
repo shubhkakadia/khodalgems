@@ -5,7 +5,11 @@ import Sidebar from "./Sidebar";
 import diamond from "../../assets/round.png";
 import { ChevronLeft, ChevronRight, Phone, Sheet } from "lucide-react";
 import { TiStarFullOutline, TiStarOutline } from "react-icons/ti";
-import { IoCartOutline, IoCartSharp } from "react-icons/io5";
+import {
+  IoCartOutline,
+  IoCartSharp,
+  IoChatbubbleEllipsesOutline,
+} from "react-icons/io5";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -86,7 +90,6 @@ export default function Stones() {
     rowsPerPage === "All" ? 1 : Math.ceil(stock.success?.length / rowsPerPage);
 
   useEffect(() => {
-
     // Function to log the screen height
     const logScreenHeight = () => {
       setTableHeight(window.innerHeight - 150); // Example: 50% of screen height
@@ -103,8 +106,6 @@ export default function Stones() {
       window.removeEventListener("resize", logScreenHeight);
     };
   }, []);
-
-  console.log(JSON.stringify(tableHeight));
 
   const fetchStock = async () => {
     try {
@@ -279,56 +280,27 @@ export default function Stones() {
     memoizedCalculations;
 
   // Export selected stones to Excel
-  const exportToExcel = () => {
+  // Function to create an Excel file and return a Blob
+  const createExcel = (selected) => {
     if (selected.length === 0) {
-      alert("No stones selected to export!");
-      return;
+      alert("No stones selected!");
+      return null;
     }
 
-    // Prepare data for Excel
-    const data = selected.map((stone) => ({
-      "Stone No": stone.stoneno,
-      "Certificate No": stone.certificateno,
-      Shape: stone.shape,
-      Carat: stone.carat,
-      Color: stone.color,
-      Clarity: stone.clarity,
-      Price: stone.price,
-      Rap: stone.rap,
-      Discount: stone.disc,
-      "$/Carat": stone.pricepercarat || 0,
-      Cut: stone.cut,
-      Polish: stone.polish,
-      Symmetry: stone.symmetry,
-      Fluorescence: stone.fluorescence,
-      Lab: stone.lab,
-      Comment: stone.comment,
-      "Eye Clean": stone.eye,
-      "Table%": stone.table,
-      "Depth%": stone.depth,
-      "Crown%": stone.crown,
-      "Pavilion%": stone.pavilion,
-      Length: stone.length,
-      Width: stone.width,
-      Height: stone.height,
-      Gurdle: stone.gurdle,
-      Culet: stone.culet,
-      Ratio: stone.ratio,
-      Location: stone.location,
-    }));
-
+    // Prepare data
+    const data = [...selected];
     data.push(
       {},
       {
-        "Stone No": "TOTALS",
+        stone_no: "TOTALS",
         "Certificate No": "",
         Shape: "",
-        Carat: totalCarat,
+        Carats: totalCarat,
         Color: "",
         Clarity: "",
-        Price: totalPrice,
-        Rap: totalRap,
-        Discount: `${totalDiscount}%`,
+        LiveAmount: totalPrice,
+        liveraparate: totalRap,
+        LiveDiscount: `${totalDiscount}%`,
         "$/Carat": "",
         Cut: "",
         Polish: "",
@@ -351,12 +323,91 @@ export default function Stones() {
       }
     );
 
+    return data;
+  };
+
+  // Function to download Excel file
+  const exportToExcel = () => {
+    if (selected.length === 0) {
+      alert("No stones selected to export!");
+      return;
+    }
+
+    // Prepare data for Excel
+    // Prepare data for Excel
+    const data = selected.map((stone) => ({
+      "Cert Date": new Date(stone.ReportDate)
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-"),
+      "Report No": stone.CertificateNo,
+      Lab: stone.LAB,
+      "Stock ID": stone.stone_no,
+      Shp: stone.Shape,
+      Crt: stone.Carats,
+      Col: stone.Color,
+      Cla: stone.Clarity,
+      Cut: stone.Cut,
+      Pol: stone.Polish,
+      Sym: stone.Symm,
+      Flo: stone.FLR,
+      Measurment: stone.measurement,
+      "Table %": stone.TableSize,
+      "Depth %": stone.DepthPer,
+      "Table Black": stone.TableBlack,
+      "Side Black": stone.SideBlack,
+      Shade: stone.Shade,
+      Rap: stone.liveraparate,
+      "R Amt": stone.LiveRate,
+      "Disc%": stone.LiveDiscount,
+      Price: stone.LiveAmount,
+      Amt: stone.LiveAmount,
+      "Cert View": stone.CertificateLink,
+      "360 View": stone.VedioLink,
+      Photo: stone.PhotoLink,
+    }));
+
+    data.push(
+      {},
+      {
+        "Cert Date": "",
+        "Report No": "",
+        Lab: "",
+        "Stock ID": "TOTALS",
+        Shp: "",
+        Crt: totalCarat,
+        Col: "",
+        Cla: "",
+        Cut: "",
+        Pol: "",
+        Sym: "",
+        Flo: "",
+        Measurment: "",
+        "Table %": "",
+        "Depth %": "",
+        "Table Black": "",
+        "Side Black": "",
+        Shade: "",
+        Rap: totalRap,
+        "R Amt": "",
+        "Disc%": `${totalDiscount}%`,
+        Price: totalPrice,
+        Amt: totalPrice,
+        "Cert View": "",
+        "360 View": "",
+        Photo: "",
+      }
+    );
+
     // Create a new workbook
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data);
 
     // Append worksheet to workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Selected Stones");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Selected Stones in Cart"
+    );
 
     // Get current date and time
     const now = new Date();
@@ -364,7 +415,7 @@ export default function Stones() {
     const formattedTime = now.toLocaleTimeString("en-GB").replace(/:/g, ":"); // HH:MM:SS
 
     // Generate Excel file with dynamic name
-    const filename = `khodalgems stock ${formattedDate} ${formattedTime}.xlsx`;
+    const filename = `khodalgems stock - ${formattedDate} ${formattedTime}.xlsx`;
     XLSX.writeFile(workbook, filename);
   };
 
@@ -478,7 +529,11 @@ export default function Stones() {
       return;
     }
 
-    await addToWishlist(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
+    await addToWishlist(
+      dispatch,
+      user,
+      selected.map((stone) => stone.stone_no).join(", ")
+    );
     setSelected([]);
   };
 
@@ -487,21 +542,29 @@ export default function Stones() {
       toast.error("Please select stones to add to cart", toastConfig);
       return;
     }
-    await addToCart(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
+    await addToCart(
+      dispatch,
+      user,
+      selected.map((stone) => stone.stone_no).join(", ")
+    );
   };
 
   const handleWishlistToggle = (stoneNo) => {
     // Check if stone exists in wishlistArray
     const exists = wishlist.success.some((item) => item.stone_no === stoneNo);
 
-    exists ? removeFromWishlist(dispatch, user, stoneNo) : addToWishlist(dispatch, user, stoneNo);
+    exists
+      ? removeFromWishlist(dispatch, user, stoneNo)
+      : addToWishlist(dispatch, user, stoneNo);
   };
 
   const handleCartToggle = (stoneNo) => {
     // Check if stone exists in wishlistArray
     const exists = cart.success.some((item) => item.stone_no === stoneNo);
 
-    exists ? removeFromCart(dispatch, user, stoneNo) : addToCart(dispatch, user, stoneNo);
+    exists
+      ? removeFromCart(dispatch, user, stoneNo)
+      : addToCart(dispatch, user, stoneNo);
   };
 
   const sortedData = usePaginatedAndSortedData(
@@ -592,8 +655,19 @@ export default function Stones() {
                       <Sheet className="h-4 w-4" />
                     </button>
                   </div>
+                  {/* <div className="flex justify-center">
+                    <button
+                      title="Enquiry"
+                      // onClick={() => handleEnquiry("+919876543210")}
+                      className="bg-theme-500 md:text-sm text-xs text-white p-2 rounded-md hover:bg-theme-600 flex items-center gap-2"
+                    >
+                      <IoChatbubbleEllipsesOutline size={20} />
+                      Enquiry
+                    </button>
+                  </div> */}
                 </div>
               </div>
+              {/* Enquiry Button */}
             </div>
           )}
 
@@ -818,7 +892,6 @@ export default function Stones() {
                           </th>
                         </tr>
                       </thead>
-
                       <tbody>
                         {sortedData.map((stone, index) => {
                           const isSelected = selected.some(
@@ -997,7 +1070,6 @@ export default function Stones() {
                                 entries
                               </span>
                             </div>
-
                             {/* Pagination Navigation - Responsive */}
                             {rowsPerPage !== "All" && (
                               <div className="flex items-center gap-1.5 order-3 sm:order-2 w-full sm:w-auto justify-center">
@@ -1021,7 +1093,6 @@ export default function Stones() {
                                     Previous
                                   </span>
                                 </button>
-
                                 {/* Page Numbers */}
                                 <div className="flex items-center gap-1.5">
                                   {Array.from(
@@ -1030,7 +1101,6 @@ export default function Stones() {
                                   )
                                     .filter((page) => {
                                       const isMobile = window.innerWidth < 640;
-
                                       if (isMobile) {
                                         return (
                                           page === 1 ||
@@ -1073,7 +1143,6 @@ export default function Stones() {
                                       </React.Fragment>
                                     ))}
                                 </div>
-
                                 {/* Next Button */}
                                 <button
                                   disabled={currentPage === totalPages}
@@ -1094,7 +1163,6 @@ export default function Stones() {
                                 </button>
                               </div>
                             )}
-
                             {/* Results Counter - Responsive */}
                             <p className="text-sm text-gray-600 dark:text-gray-300 order-2 sm:order-3">
                               {rowsPerPage === "All" ? (

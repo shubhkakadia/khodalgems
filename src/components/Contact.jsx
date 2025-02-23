@@ -10,23 +10,85 @@ import {
   Video,
   Mail,
   MessageSquare,
+  User,
+  MapPin,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import emailjs from "@emailjs/browser";
 
 export default function Contact() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
   });
+  const offices = [
+    {
+      city: "Surat",
+      type: "(Manufacturing)",
+      address:
+        "A-101, Kamla Estate Savani Road, Mini Bazar, Varachha, Kodiyar Nagar, Surat, Gujarat 395006, India",
+      contactPerson: "Vinod vadsak",
+      contactNumber: "+91 94096 58456",
+      complete: true,
+    },
+    {
+      city: "Mumbai",
+      type: "",
+      address: "AE-3071/72 Bharat Diamond Bourse, BKC, Bandra (E), Mumbai, Maharastra, 400051, India",
+      contactPerson: "Rajesh Kakadia",
+      contactNumber: "+91 99201 78885",
+      complete: false,
+    },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add form submission logic here
-    toast.success("Message sent successfully!");
+
+    // Show loading toast
+    const toastId = toast.loading("Sending message...");
+
+    // EmailJS send email
+    emailjs
+      .send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID, // Replace with your EmailJS service ID
+        process.env.REACT_APP_EMAILJS_TEMPLATE_ID, // Replace with your template ID
+        {
+          from_name: formData.name,
+          reply_to: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        },
+        process.env.REACT_APP_EMAILJS_PUBLIC_KEY // Replace with your public key
+      )
+      .then(() => {
+        // Update loading toast to success
+        toast.update(toastId, {
+          render: "Message sent successfully! ",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
+
+        // Clear form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+      })
+      .catch((error) => {
+        // Update loading toast to error
+        toast.update(toastId, {
+          render: "Failed to send message. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+        console.error("EmailJS Error:", error);
+      });
   };
 
   const handleInputChange = (e) => {
@@ -35,6 +97,15 @@ export default function Contact() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const openInGoogleMaps = (address) => {
+    if (!address) return;
+    const encodedAddress = encodeURIComponent(address);
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
+      "_blank"
+    );
   };
 
   return (
@@ -118,18 +189,67 @@ export default function Contact() {
             </form>
           </div>
 
-          {/* Right Column - Map with responsive iframe */}
+          {/* Right Column */}
           <div className="w-full h-[300px] md:h-auto">
             <div className="w-full h-full bg-white rounded-lg shadow-sm overflow-hidden">
-              <iframe
-                title="map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3719.516063161418!2d72.84461787471932!3d21.211375081482384!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be04fcef815cfdd%3A0x989b790402acb15a!2sKhodal%20Gems!5e0!3m2!1sen!2sin!4v1733311795998!5m2!1sen!2sin"
-                className="w-full h-full"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-4 p-4">
+                {offices.map((office, index) => (
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() =>
+                      office.complete && openInGoogleMaps(office.address)
+                    }
+                  >
+                    <div className="flex items-start space-x-2">
+                      <MapPin className="w-5 h-5 text-theme-500 mt-1 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {office.city}
+                          {office.type && (
+                            <span className="text-sm text-gray-600 ml-1">
+                              {office.type}
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {office.country}
+                        </p>
+                      </div>
+                    </div>
+
+                    {office.complete ? (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm text-gray-700">
+                          {office.address}
+                        </p>
+
+                        {office.contactPerson && (
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <p className="text-sm text-gray-600">
+                              {office.contactPerson}
+                            </p>
+                          </div>
+                        )}
+
+                        {office.contactNumber && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <p className="text-sm text-gray-600">
+                              {office.contactNumber}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-sm text-gray-500 italic">
+                        Address details coming soon
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -154,23 +274,48 @@ export default function Contact() {
                 className="flex items-center text-gray-600 hover:text-theme-600"
               >
                 <Mail className="w-5 h-5 mr-2" />
-                <span className="text-sm md:text-base">sales@khodalgems.com</span>
+                <span className="text-sm md:text-base">
+                  sales@khodalgems.com
+                </span>
               </a>
             </div>
           </div>
 
           {/* Messaging Apps */}
           <div className="p-4 bg-white rounded-lg shadow-sm md:p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Message Us
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Message Us</h3>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: <MessageCircle />, text: 'WhatsApp', href: 'https://wa.me/+919409658456', hoverColor: 'hover:text-green-600' },
-                { icon: <Video />, text: 'Skype', href: 'skype:vadsak_vin?chat', hoverColor: 'hover:text-blue-600' },
-                { icon: <Send />, text: 'Telegram', href: 'https://t.me/khodalgems', hoverColor: 'hover:text-blue-500' },
-                { icon: <MessageSquare />, text: 'WeChat', href: 'weixin://dl/chat?khodalgems', hoverColor: 'hover:text-green-500' },
-                { icon: <MessageSquare />, text: 'Line', href: 'https://line.me/ti/p/n9QS7xxuin', hoverColor: 'hover:text-green-500' }
+                {
+                  icon: <MessageCircle />,
+                  text: "WhatsApp",
+                  href: "https://wa.me/+919409658456",
+                  hoverColor: "hover:text-green-600",
+                },
+                {
+                  icon: <Video />,
+                  text: "Skype",
+                  href: "skype:vadsak_vin?chat",
+                  hoverColor: "hover:text-blue-600",
+                },
+                {
+                  icon: <Send />,
+                  text: "Telegram",
+                  href: "https://t.me/khodalgems",
+                  hoverColor: "hover:text-blue-500",
+                },
+                {
+                  icon: <MessageSquare />,
+                  text: "WeChat",
+                  href: "weixin://dl/chat?khodalgems",
+                  hoverColor: "hover:text-green-500",
+                },
+                {
+                  icon: <MessageSquare />,
+                  text: "Line",
+                  href: "https://line.me/ti/p/n9QS7xxuin",
+                  hoverColor: "hover:text-green-500",
+                },
               ].map((item, index) => (
                 <a
                   key={index}
@@ -191,19 +336,38 @@ export default function Contact() {
             <h3 className="text-lg font-semibold text-gray-900">Follow Us</h3>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: <Facebook />, text: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61550287686175', hoverColor: 'hover:text-blue-600' },
-                { icon: <Instagram />, text: 'Instagram', href: 'https://www.instagram.com/khodal_gems_mumbai/', hoverColor: 'hover:text-pink-600' },
-                { icon: <Youtube />, text: 'YouTube', href: 'https://www.youtube.com/channel/UCp6bkMkNaQ90k-OT9KbKIXQ', hoverColor: 'hover:text-red-600' },
+                {
+                  icon: <Facebook />,
+                  text: "Facebook",
+                  href: "https://www.facebook.com/profile.php?id=61550287686175",
+                  hoverColor: "hover:text-blue-600",
+                },
+                {
+                  icon: <Instagram />,
+                  text: "Instagram",
+                  href: "https://www.instagram.com/khodal_gems_mumbai/",
+                  hoverColor: "hover:text-pink-600",
+                },
+                {
+                  icon: <Youtube />,
+                  text: "YouTube",
+                  href: "https://www.youtube.com/channel/UCp6bkMkNaQ90k-OT9KbKIXQ",
+                  hoverColor: "hover:text-red-600",
+                },
                 {
                   icon: (
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <svg
+                      className="w-5 h-5"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   ),
-                  text: 'Twitter',
-                  href: 'https://x.com/khodalgems',
-                  hoverColor: 'hover:text-gray-900'
-                }
+                  text: "Twitter",
+                  href: "https://x.com/khodalgems",
+                  hoverColor: "hover:text-gray-900",
+                },
               ].map((item, index) => (
                 <a
                   key={index}

@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoCartOutline, IoCartSharp } from "react-icons/io5";
 import axios from "axios";
 import { removeFromWishlist } from "../state/removeFromWishlist";
+import Loader from "./Loader";
 
 export default function Wishlist() {
   const clarityOrder = [
@@ -90,7 +91,7 @@ export default function Wishlist() {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  const fetchDiamondDetails = async (wishlist) => {
+  const fetchDiamondDetails = async (dispatch, user, wishlist) => {
     if (!wishlist.length) return [];
 
     const requests = wishlist.map((item) =>
@@ -103,7 +104,29 @@ export default function Wishlist() {
 
     try {
       const responses = await Promise.all(requests);
-      return responses.map((res) => res.data.UserData[0]); // Extract relevant data
+
+      // Keep track of sold stones to remove them from cart
+      const soldStones = [];
+
+      // Process responses and identify sold stones
+      responses.forEach((res, index) => {
+        if (res.data.UserData[0] === undefined) {
+          soldStones.push(wishlist[index].stone_no);
+        }
+      });
+      // Remove sold stones from user's cart
+      if (soldStones.length > 0) {
+        soldStones?.forEach((stone_no) => {
+          removeFromWishlist(dispatch, user, stone_no);
+          // Optional: Show notification to user about removed stones
+        });
+      }
+
+      // Filter and return available stones
+      const filteredResponses = responses.filter(
+        (res) => res.data.UserData[0] !== undefined
+      );
+      return filteredResponses.map((res) => res.data.UserData[0]);
     } catch (error) {
       console.error("Error fetching diamond details:", error);
       return [];
@@ -135,7 +158,7 @@ export default function Wishlist() {
 
   useEffect(() => {
     if (wishlist.length > 0) {
-      fetchDiamondDetails(wishlist).then(setWishlistItems);
+      fetchDiamondDetails(dispatch, user, wishlist).then(setWishlistItems);
     }
   }, [wishlist]);
 
@@ -332,67 +355,65 @@ export default function Wishlist() {
 
     // Prepare data for Excel
     const data = selected.map((stone) => ({
-      "Stone No": stone.stoneno,
-      "Certificate No": stone.certificateno,
-      Shape: stone.shape,
-      Carat: stone.carat,
-      Color: stone.color,
-      Clarity: stone.clarity,
-      Price: stone.price,
-      Rap: stone.rap,
-      Discount: stone.disc,
-      "$/Carat": stone.pricepercarat || 0,
-      Cut: stone.cut,
-      Polish: stone.polish,
-      Symmetry: stone.symmetry,
-      Fluorescence: stone.fluorescence,
-      Lab: stone.lab,
-      Comment: stone.comment,
-      "Eye Clean": stone.eye,
-      "Table%": stone.table,
-      "Depth%": stone.depth,
-      "Crown%": stone.crown,
-      "Pavilion%": stone.pavilion,
-      Length: stone.length,
-      Width: stone.width,
-      Height: stone.height,
-      Gurdle: stone.gurdle,
-      Culet: stone.culet,
-      Ratio: stone.ratio,
-      Location: stone.location,
+      "Cert Date": new Date(stone.ReportDate)
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-"),
+      "Report No": stone.CertificateNo,
+      Lab: stone.LAB,
+      "Stock ID": stone.stone_no,
+      Shp: stone.Shape,
+      Crt: stone.Carats,
+      Col: stone.Color,
+      Cla: stone.Clarity,
+      Cut: stone.Cut,
+      Pol: stone.Polish,
+      Sym: stone.Symm,
+      Flo: stone.FLR,
+      Measurment: stone.measurement,
+      "Table %": stone.TableSize,
+      "Depth %": stone.DepthPer,
+      "Table Black": stone.TableBlack,
+      "Side Black": stone.SideBlack,
+      Shade: stone.Shade,
+      Rap: stone.liveraparate,
+      "R Amt": stone.LiveRate,
+      "Disc%": stone.LiveDiscount,
+      Price: stone.LiveAmount,
+      Amt: stone.LiveAmount,
+      "Cert View": stone.CertificateLink,
+      "360 View": stone.VedioLink,
+      Photo: stone.PhotoLink,
     }));
 
     data.push(
       {},
       {
-        "Stone No": "TOTALS",
-        "Certificate No": "",
-        Shape: "",
-        Carat: totalCarat,
-        Color: "",
-        Clarity: "",
-        Price: totalPrice,
-        Rap: totalRap,
-        Discount: `${totalDiscount}%`,
-        "$/Carat": "",
-        Cut: "",
-        Polish: "",
-        Symmetry: "",
-        Fluorescence: "",
+        "Cert Date": "",
+        "Report No": "",
         Lab: "",
-        Comment: "",
-        "Eye Clean": "",
-        "Table%": "",
-        "Depth%": "",
-        "Crown%": "",
-        "Pavilion%": "",
-        Length: "",
-        Width: "",
-        Height: "",
-        Gurdle: "",
-        Culet: "",
-        Ratio: "",
-        Location: "",
+        "Stock ID": "TOTALS",
+        Shp: "",
+        Crt: totalCarat,
+        Col: "",
+        Cla: "",
+        Cut: "",
+        Pol: "",
+        Sym: "",
+        Flo: "",
+        Measurment: "",
+        "Table %": "",
+        "Depth %": "",
+        "Table Black": "",
+        "Side Black": "",
+        Shade: "",
+        Rap: totalRap,
+        "R Amt": "",
+        "Disc%": `${totalDiscount}%`,
+        Price: totalPrice,
+        Amt: totalPrice,
+        "Cert View": "",
+        "360 View": "",
+        Photo: "",
       }
     );
 
@@ -419,26 +440,30 @@ export default function Wishlist() {
 
   const removefromwishlistfunction = async () => {
     if (selected.length === 0) {
-          toast.error("Please select stones to add to wishlist", toastConfig);
-          return;
-        }
-    
-        await removeFromWishlist(dispatch, user, selected.map((stone) => stone.stone_no).join(", "));
-        setSelected([]);
+      toast.error("Please select stones to add to wishlist", toastConfig);
+      return;
+    }
+
+    await removeFromWishlist(
+      dispatch,
+      user,
+      selected.map((stone) => stone.stone_no).join(", ")
+    );
+    setSelected([]);
   };
 
   const addtocartfunction = async () => {
-        if (selected.length === 0) {
-          toast.error("Please select stones to add to wishlist", toastConfig);
-          return;
-        }
-    
-        await addToCart(
-          dispatch,
-          user,
-          selected.map((stone) => stone.stone_no).join(", ")
-        );
-        setSelected([]);
+    if (selected.length === 0) {
+      toast.error("Please select stones to add to wishlist", toastConfig);
+      return;
+    }
+
+    await addToCart(
+      dispatch,
+      user,
+      selected.map((stone) => stone.stone_no).join(", ")
+    );
+    setSelected([]);
   };
   const handleCartToggle = (stoneNo) => {
     // Check if stone exists in wishlistArray
@@ -559,9 +584,7 @@ export default function Wishlist() {
         </div>
 
         <div className="flex-1">
-          <div>
-            {/* Table Section */}
-            {sortedData?.length > 0 ? (
+        {sortedData?.length === 0 ? (<div><Loader/></div>):(
               <div>
                 <div className="mx-4 overflow-x-auto overflow-y-auto h-[500px] transition-all duration-300 ease-in-out">
                   <table className="table-auto border-collapse border border-gray-300 w-full sortable">
@@ -1033,24 +1056,8 @@ export default function Wishlist() {
                   )}
                 </div>
               </div>
-            ) : (
-              <div className="flex justify-center items-center">
-                <div className="flex gap-4 items-center">
-                  <img src={diamond} alt="Diamond" />
-                  <div>
-                    <h1 className="font-quicksand text-center text-gray-600 dark:text-gray-300 font-semibold">
-                      Your wishlist is empty!
-                    </h1>
-                  </div>
-
-                  <img src={diamond} alt="Diamond" />
-                </div>
-              </div>
             )}
-          </div>
         </div>
-
-        <div></div>
       </div>
     </div>
   );
