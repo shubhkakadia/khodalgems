@@ -1,11 +1,9 @@
-// Settings.jsx
-import React, { memo, useRef, useState } from "react";
-import { Bell, Phone, Lock, Eye, EyeOff, X, Upload, Bus } from "lucide-react";
+import React, { memo, useState } from "react";
+import { Bell, Phone, Lock, Eye, EyeOff} from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
-// import { useDarkMode } from "../../context/DarkModeContext";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setUserSuccess } from "../state/user";
@@ -181,11 +179,11 @@ export default function Settings() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [notifications, setNotifications] = useState(true);
-  const [newsletterSubscription, setNewsletterSubscription] = useState(true);
+  // const [newsletterSubscription, setNewsletterSubscription] = useState(true);
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState(
-    user.profile_picture || ""
-  );
+  // const [profilePhoto, setProfilePhoto] = useState(
+  //   user.profile_picture || ""
+  // );
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -365,47 +363,47 @@ export default function Settings() {
     </div>
   );
 
-  const removePhoto = () => {
-    setProfilePhoto("");
-    setProfileData((prev) => ({
-      ...prev,
-      profile_picture: "",
-    }));
-    setIsEditing(true);
-  };
+  // const removePhoto = () => {
+  //   setProfilePhoto("");
+  //   setProfileData((prev) => ({
+  //     ...prev,
+  //     profile_picture: "",
+  //   }));
+  //   setIsEditing(true);
+  // };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Add file size check
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        toast.error("File size should be less than 5MB");
-        return;
-      }
+  // const handlePhotoChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     // Add file size check
+  //     if (file.size > 5 * 1024 * 1024) {
+  //       // 5MB limit
+  //       toast.error("File size should be less than 5MB");
+  //       return;
+  //     }
 
-      // Add file type check
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
-        return;
-      }
+  //     // Add file type check
+  //     if (!file.type.startsWith("image/")) {
+  //       toast.error("Please upload an image file");
+  //       return;
+  //     }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        setProfilePhoto(base64String);
-        setProfileData((prev) => ({
-          ...prev,
-          profile_picture: base64String,
-        }));
-      };
-      reader.onerror = () => {
-        toast.error("Error reading file");
-      };
-      reader.readAsDataURL(file);
-      setIsEditing(true);
-    }
-  };
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       const base64String = reader.result;
+  //       setProfilePhoto(base64String);
+  //       setProfileData((prev) => ({
+  //         ...prev,
+  //         profile_picture: base64String,
+  //       }));
+  //     };
+  //     reader.onerror = () => {
+  //       toast.error("Error reading file");
+  //     };
+  //     reader.readAsDataURL(file);
+  //     setIsEditing(true);
+  //   }
+  // };
 
   // Add email validation
   const validateEmail = (email) => {

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Link, useNavigate } from "react-router-dom";
-import diamond from "../../assets/round.png";
 import { ChevronLeft, ChevronRight, Phone, Sheet } from "lucide-react";
 // import wishlistData from "../Data/wishlist.json";
 
@@ -160,6 +159,7 @@ export default function Wishlist() {
     if (wishlist.length > 0) {
       fetchDiamondDetails(dispatch, user, wishlist).then(setWishlistItems);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wishlist]);
 
   const customSort = (data, column, direction) => {

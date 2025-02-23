@@ -7,13 +7,8 @@ import companyLogo from "../assets/CompanyLogo-transparent.png";
 import ContactSupport from "./ContactSupport";
 import IGILogo from "../assets/IGI Logo.png";
 import GIALogo from "../assets/GIA Logo.png";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setAdminError,
-  setAdminLoading,
-  setAdminSuccess,
-} from "./state/admin.js";
-import { setUserError, setUserLoading, setUserSuccess } from "./state/user.js";
+import { useDispatch } from "react-redux";
+import { setUserSuccess } from "./state/user.js";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);

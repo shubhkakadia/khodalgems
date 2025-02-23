@@ -8,7 +8,6 @@ import { TiStarFullOutline, TiStarOutline } from "react-icons/ti";
 import {
   IoCartOutline,
   IoCartSharp,
-  IoChatbubbleEllipsesOutline,
 } from "react-icons/io5";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -112,27 +111,6 @@ export default function Stones() {
       // Set loading state when the API call starts
       dispatch(setLoading(true));
 
-      // Prepare the request data
-      const defaultParams = {
-        Shape: "",
-        Color: "",
-        Intensity: "",
-        Overtone: "",
-        FancyColor: "",
-        Clarity: "",
-        FromToCtsSize: "",
-        FromCts: 0,
-        ToCts: 0,
-        Cut: "",
-        Polish: "",
-        Symmetry: "",
-        Flr: "",
-        HandA: "",
-        EyeClean: "",
-        Lab: "",
-        Location: "",
-      };
-
       const config = {
         method: "post",
         maxBodyLength: Infinity,
@@ -178,6 +156,7 @@ export default function Stones() {
     };
 
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle checkbox change
@@ -279,53 +258,6 @@ export default function Stones() {
   const { totalPieces, totalCarat, totalPrice, totalRap, totalDiscount } =
     memoizedCalculations;
 
-  // Export selected stones to Excel
-  // Function to create an Excel file and return a Blob
-  const createExcel = (selected) => {
-    if (selected.length === 0) {
-      alert("No stones selected!");
-      return null;
-    }
-
-    // Prepare data
-    const data = [...selected];
-    data.push(
-      {},
-      {
-        stone_no: "TOTALS",
-        "Certificate No": "",
-        Shape: "",
-        Carats: totalCarat,
-        Color: "",
-        Clarity: "",
-        LiveAmount: totalPrice,
-        liveraparate: totalRap,
-        LiveDiscount: `${totalDiscount}%`,
-        "$/Carat": "",
-        Cut: "",
-        Polish: "",
-        Symmetry: "",
-        Fluorescence: "",
-        Lab: "",
-        Comment: "",
-        "Eye Clean": "",
-        "Table%": "",
-        "Depth%": "",
-        "Crown%": "",
-        "Pavilion%": "",
-        Length: "",
-        Width: "",
-        Height: "",
-        Gurdle: "",
-        Culet: "",
-        Ratio: "",
-        Location: "",
-      }
-    );
-
-    return data;
-  };
-
   // Function to download Excel file
   const exportToExcel = () => {
     if (selected.length === 0) {
@@ -333,7 +265,6 @@ export default function Stones() {
       return;
     }
 
-    // Prepare data for Excel
     // Prepare data for Excel
     const data = selected.map((stone) => ({
       "Cert Date": new Date(stone.ReportDate)

@@ -207,6 +207,7 @@ const FloatingShapes = () => {
 
     const animationInterval = setInterval(updateFrame, 16);
     return () => clearInterval(animationInterval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

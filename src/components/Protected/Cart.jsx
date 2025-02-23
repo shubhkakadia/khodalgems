@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Link, useNavigate } from "react-router-dom";
-import diamond from "../../assets/round.png";
 import { ChevronLeft, ChevronRight, Phone, Sheet } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -82,87 +81,7 @@ export default function Cart() {
       : cartItems?.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages =
     rowsPerPage === "All" ? 1 : Math.ceil(cartItems?.length / rowsPerPage);
-  const soldStone = {
-    stone_no: "Stone Sold",
-    Carats: 0,
-    Shape: "",
-    LAB: "",
-    CertificateNo: "",
-    Color: "",
-    Intensity: "",
-    Overtone: "",
-    FancyColor: "",
-    Clarity: "",
-    Cut: "",
-    Polish: "",
-    Symm: "",
-    FLR: "",
-    measurement: "",
-    StoneLength: 0,
-    StoneWidth: 0,
-    StoneHeight: 0,
-    DepthPer: 0,
-    TableSize: 0,
-    CrownHeight: 0,
-    CrownAngle: 0,
-    PavillionHeight: 0,
-    PavillionAngle: 0,
-    GirdlePer: 0,
-    StoneImage: "",
-    LWRatio: "",
-    Location: "MUMBAI",
-    Branch: "SURAT",
-    liveraparate: 0,
-    LiveDiscount: 0,
-    LiveRate: 0,
-    LiveAmount: 0,
-    remarks: "",
-    InwardDate: "",
-    stockstatus: "",
-    webstatus: "",
-    JobNo: "",
-    ControlNo: "",
-    ReportType: "",
-    ReportDate: "",
-    MemoNo: "",
-    Girdle: "",
-    GirdleCondition: "",
-    CuletSize: "",
-    StrLn: 0,
-    LrHalf: 0,
-    Painting: "",
-    Proportion: "",
-    PolishFeatures: "",
-    SymmFeatures: "",
-    KeytoSymbols: "",
-    ReportComments: "",
-    Inscription: "",
-    Ratio: 0,
-    TableInc: "",
-    SideInc: "",
-    TableBlack: "",
-    SideBlack: "",
-    HNA: "",
-    TableOpen: "",
-    SideOpen: "",
-    ExtFac: "",
-    Shade: "",
-    Lst: "",
-    RedSpot: "",
-    EyeClean: "",
-    BoxName: "",
-    ColorDesc: "",
-    FlrColor: "",
-    Treatment: "",
-    MemberComment: "WhatsApp : ",
-    GrowthType: "",
-    SizeCode: "",
-    Holdstatus: "",
-    CertificateLink: "",
-    PhotoLink: "",
-    VedioLink: "",
-    BGM: null,
-  };
+
   // Format number with commas
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -237,6 +156,7 @@ export default function Cart() {
     if (cart.length > 0) {
       fetchDiamondDetails(dispatch, user, cart)?.then(setCartItems);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart]);
 
   const customSort = (data, column, direction) => {
